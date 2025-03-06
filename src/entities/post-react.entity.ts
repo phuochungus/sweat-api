@@ -2,7 +2,7 @@ import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { User } from './user.entity';
 import { Post } from './post.entity';
-import { ReactType } from 'src/common/enums/enum'; 
+import { ReactType } from 'src/common/enums/enum';
 
 @Entity('post_react')
 export class PostReact extends BaseEntity {
