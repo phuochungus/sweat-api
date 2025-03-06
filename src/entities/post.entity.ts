@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { User } from './user.entity';
-import { PostPrivacy } from '../common/enums/post-privacy.enum';
+import { PostPrivacy } from 'src/common/enums/enum';
 import { PostTag } from './post-tag.entity';
 import { PostMedia } from './post-media.entity';
 import { PostComment } from './post-comment.entity';

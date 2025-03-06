@@ -10,7 +10,6 @@ export enum PostPrivacy {
   FRIEND = 'FRIEND',
   PUBLIC = 'PUBLIC',
 }
-
 export enum ReactType {
   HEART = 'HEART',
 }
