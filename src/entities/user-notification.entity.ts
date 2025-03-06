@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { User } from './user.entity';
-import { NotificationStatus } from 'src/common/enums/enum';
+import { NotificationStatus } from 'src/common/enums';
 @Entity('user_notification')
 export class UserNotification extends BaseEntity {
   @Column()

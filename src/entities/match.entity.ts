@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { User } from './user.entity';
-import { MatchStatus } from 'src/common/enums/enum';
+import { MatchStatus } from 'src/common/enums';
 import { MatchAttendee } from './match-attendee.entity';
 
 @Entity('match')

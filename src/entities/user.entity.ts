@@ -6,7 +6,7 @@ import { PostComment } from './post-comment.entity';
 import { PostReact } from './post-react.entity';
 import { UserFriendRequest } from './user-friend-request.entity';
 import { Match } from './match.entity';
-import { UserGender } from 'src/common/enums/enum';
+import { UserGender } from 'src/common/enums';
 
 @Entity('user')
 export class User extends BaseEntity {

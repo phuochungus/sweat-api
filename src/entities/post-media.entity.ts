@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Post } from './post.entity';
-import { MediaType } from 'src/common/enums/enum';
+import { MediaType } from 'src/common/enums';
 
 @Entity('post_media')
 export class PostMedia extends BaseEntity {

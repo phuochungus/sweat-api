@@ -1,8 +1,7 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { User } from './user.entity';
-import { FriendRequestStatus } from 'src/common/enums/enum';
-
+import { FriendRequestStatus } from 'src/common/enums';
 @Entity('user_friend_request')
 export class UserFriendRequest extends BaseEntity {
   @Column()
