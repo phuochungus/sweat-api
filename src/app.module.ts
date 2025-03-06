@@ -7,6 +7,7 @@ import configuration from 'src/config/configuration';
 import { AwsModule } from 'src/aws/aws.module';
 import { PostModule } from './post/post.module';
 import { PostMediaModule } from './post-media/post-media.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PostMediaModule } from './post-media/post-media.module';
     AwsModule,
     PostModule,
     PostMediaModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
