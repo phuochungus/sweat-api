@@ -7,31 +7,31 @@ import { MatchAttendee } from './match-attendee.entity';
 @Entity('match')
 export class Match extends BaseEntity {
   @Column()
-  location: string;
+  location!: string;
 
   @Column()
   location_url: string;
 
   @Column()
-  user_id: number;
+  user_id!: number;
 
   @Column({ type: 'enum', enum: MatchStatus })
-  status: MatchStatus;
+  status!: MatchStatus;
 
   @Column()
-  max_num_attendees: number;
+  max_num_attendees!: number;
 
-  @Column()
-  description: string;
+  @Column({ nullable: true })
+  description?: string;
 
-  @Column()
-  create_chat: boolean;
+  @Column({ default: true })
+  create_chat!: boolean;
 
-  @Column()
-  start_datetime: Date;
+  @Column({ type: 'datetime' })
+  start_datetime!: Date;
 
-  @Column()
-  end_datetime: Date;
+  @Column({ type: 'datetime' })
+  end_datetime!: Date;
 
   @ManyToOne(() => User, (user) => user.matches)
   @JoinColumn({ name: 'user_id' })

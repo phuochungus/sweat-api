@@ -6,10 +6,10 @@ import { Post } from './post.entity';
 @Entity('post_tag')
 export class PostTag extends BaseEntity {
   @Column()
-  user_id: number;
+  user_id!: number;
 
   @Column()
-  post_id: number;
+  post_id!: number;
 
   @ManyToOne(() => User, (user) => user.postTags)
   @JoinColumn({ name: 'user_id' })

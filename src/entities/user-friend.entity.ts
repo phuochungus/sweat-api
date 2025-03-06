@@ -5,10 +5,10 @@ import { User } from './user.entity';
 @Entity('user_friend')
 export class UserFriend extends BaseEntity {
   @Column()
-  user_id1: number;
+  user_id1!: number;
 
   @Column()
-  user_id2: number;
+  user_id2!: number;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'user_id1' })

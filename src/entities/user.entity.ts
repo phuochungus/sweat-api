@@ -5,18 +5,19 @@ import { PostTag } from './post-tag.entity';
 import { PostComment } from './post-comment.entity';
 import { PostReact } from './post-react.entity';
 import { UserFriendRequest } from './user-friend-request.entity';
-import { UserFriend } from './user-friend.entity';
-import { UserNotification } from './user-notification.entity';
 import { Match } from './match.entity';
-import { MatchAttendee } from './match-attendee.entity';
+import { UserGender } from 'src/common/enums/enum';
 
 @Entity('user')
 export class User extends BaseEntity {
   @Column()
-  fullname: string;
+  fullname!: string;
 
   @Column()
-  avatar: string;
+  avatar!: string;
+
+  @Column({ type: 'enum', enum: UserGender, default: UserGender.OTHER })
+  gender!: UserGender;
 
   @OneToMany(() => Post, (post) => post.user)
   posts: Post[];

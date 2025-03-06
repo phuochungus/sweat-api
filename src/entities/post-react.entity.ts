@@ -7,13 +7,13 @@ import { ReactType } from 'src/common/enums/enum';
 @Entity('post_react')
 export class PostReact extends BaseEntity {
   @Column({ type: 'enum', enum: ReactType })
-  type: ReactType;
+  type!: ReactType;
 
   @Column()
-  user_id: number;
+  user_id!: number;
 
   @Column()
-  post_id: number;
+  post_id!: number;
 
   @ManyToOne(() => User, (user) => user.reacts)
   @JoinColumn({ name: 'user_id' })

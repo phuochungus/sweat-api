@@ -6,10 +6,10 @@ import { BaseEntity } from './base.entity';
 @Entity('match_attendee')
 export class MatchAttendee extends BaseEntity {
   @Column()
-  match_id: number;
+  match_id!: number;
 
   @Column()
-  user_id: number;
+  user_id!: number;
 
   @ManyToOne(() => Match, (match) => match.attendees)
   @JoinColumn({ name: 'match_id' })

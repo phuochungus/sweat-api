@@ -10,22 +10,22 @@ import { PostReact } from './post-react.entity';
 @Entity('post')
 export class Post extends BaseEntity {
   @Column()
-  text: string;
+  text!: string;
 
-  @Column()
-  comment_count: number;
+  @Column({ default: 0 })
+  comment_count!: number;
 
-  @Column()
-  react_count: number;
+  @Column({ default: 0 })
+  react_count!: number;
 
-  @Column()
-  media_count: number;
+  @Column({ default: 0 })
+  media_count!: number;
 
   @Column({ type: 'enum', enum: PostPrivacy })
-  privacy: PostPrivacy;
+  privacy!: PostPrivacy;
 
   @Column()
-  user_id: number;
+  user_id!: number;
 
   @ManyToOne(() => User, (user) => user.posts)
   @JoinColumn({ name: 'user_id' })

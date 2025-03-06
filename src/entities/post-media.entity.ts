@@ -6,16 +6,16 @@ import { MediaType } from 'src/common/enums/enum';
 @Entity('post_media')
 export class PostMedia extends BaseEntity {
   @Column()
-  post_id: number;
+  post_id!: number;
 
   @Column()
-  priority: number;
+  priority!: number;
 
   @Column()
-  url: string;
+  url!: string;
 
   @Column({ type: 'enum', enum: MediaType })
-  type: MediaType;
+  type!: MediaType;
 
   @ManyToOne(() => Post, (post) => post.media)
   @JoinColumn({ name: 'post_id' })

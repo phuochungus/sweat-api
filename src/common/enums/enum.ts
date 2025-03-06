@@ -13,3 +13,17 @@ export enum PostPrivacy {
 export enum ReactType {
   HEART = 'HEART',
 }
+export enum UserGender {
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+  OTHER = 'OTHER',
+}
+export enum FriendRequestStatus {
+  ACCEPTED = 'ACCEPTED',
+  PENDING = 'PENDING',
+  REJECTED = 'REJECTED',
+}
+export enum NotificationStatus {
+  SEEN = 'SEEN',
+  UNSEEN = 'UNSEEN',
+}
