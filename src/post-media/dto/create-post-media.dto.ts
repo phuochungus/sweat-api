@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { MediaType } from 'src/common/enums';
 
 export class CreatePostMediaDto {
   @ApiProperty()
@@ -9,4 +10,7 @@ export class CreatePostMediaDto {
 
   @ApiProperty()
   url!: string;
+
+  @ApiProperty()
+  type!: MediaType;
 }
