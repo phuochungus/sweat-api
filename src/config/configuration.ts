@@ -11,7 +11,8 @@ export default () => ({
     logging: process.env.ORM_LOGGING === 'true',
     autoLoadEntities: true,
     keepConnectionAlive: true,
-    entities: [`${__dirname}/**/*.entity{.ts,.js}`],
+    synchronize: process.env.ORM_SYNCHRONIZE == 'true',
+    entities: [`${__dirname}/../**/*.entity{.ts,.js}`],
     extra: {
       connectionLimit: parseInt(process.env.ORM_CONNECTION_LIMIT || '10', 10),
     },

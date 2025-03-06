@@ -27,10 +27,10 @@ export class Match extends BaseEntity {
   @Column({ default: true })
   create_chat!: boolean;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'time without time zone' })
   start_datetime!: Date;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'time without time zone' })
   end_datetime!: Date;
 
   @ManyToOne(() => User, (user) => user.matches)
