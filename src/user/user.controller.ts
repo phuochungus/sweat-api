@@ -6,37 +6,36 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { JwtGuard } from 'src/common/guards';
+import { User } from 'src/common/decorators';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  @UseGuards(JwtGuard)
+  @Post('/')
+  async createUser(@User() user) {
+    return user;
   }
 
-  @Get()
-  findAll() {
-    return this.userService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  @UseGuards(JwtGuard)
+  @Patch('/:id')
+  async updateUser(
+    @Body() updateUserDto: UpdateUserDto,
+    @Param('id') id: string,
+  ) {
+    if (!id) {
+      throw new BadRequestException('Id is required');
+    }
+    if (isNaN(+id)) {
+      throw new BadRequestException('Id must be a number');
+    }
     return this.userService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
   }
 }

@@ -10,14 +10,17 @@ import { UserGender } from 'src/common/enums';
 
 @Entity('user')
 export class User extends BaseEntity {
-  @Column()
-  fullname!: string;
+  @Column({ nullable: true })
+  fullname?: string;
+
+  @Column({ nullable: true })
+  avatar?: string;
+
+  @Column({ type: 'enum', enum: UserGender })
+  gender?: UserGender;
 
   @Column()
-  avatar!: string;
-
-  @Column({ type: 'enum', enum: UserGender, default: UserGender.OTHER })
-  gender!: UserGender;
+  firebase_id!: string;
 
   @OneToMany(() => Post, (post) => post.user)
   posts: Post[];

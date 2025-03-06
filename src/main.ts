@@ -8,9 +8,14 @@ import {
   version as pkgVersion,
 } from '../package.json';
 import { ValidationPipe } from '@nestjs/common';
+import * as firebaseKey from '../serviceAccountKey.json';
+import * as admin from 'firebase-admin';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  admin.initializeApp({
+    credential: admin.credential.cert(firebaseKey as any),
+  });
   const options = new DocumentBuilder()
     .setTitle(pkgName)
     .setDescription(pkgDesc)
@@ -24,16 +29,6 @@ async function bootstrap() {
       description: 'Enter JWT token',
       in: 'header',
     })
-    // .addGlobalParameters({
-    //   in: 'header',
-    //   required: false,
-    //   name: 'x-api-key',
-    // })
-    // .addGlobalParameters({
-    //   in: 'header',
-    //   required: false,
-    //   name: 'x-uid',
-    // })
     .build();
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('docs', app, document, {
