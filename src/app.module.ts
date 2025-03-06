@@ -5,6 +5,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import configuration from 'src/config/configuration';
 import { AwsModule } from 'src/aws/aws.module';
+import { PostModule } from './post/post.module';
+import { PostMediaModule } from './post-media/post-media.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { AwsModule } from 'src/aws/aws.module';
       inject: [ConfigService],
     }),
     AwsModule,
+    PostModule,
+    PostMediaModule,
   ],
   controllers: [AppController],
   providers: [AppService],

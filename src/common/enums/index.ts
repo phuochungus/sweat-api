@@ -27,3 +27,13 @@ export enum NotificationStatus {
   SEEN = 'SEEN',
   UNSEEN = 'UNSEEN',
 }
+export enum MIME_TYPE {
+  IMAGES = 'images',
+  VIDEO = 'video',
+  AUDIO = 'audio',
+  FILES = 'files',
+}
+export enum TYPE_UPLOAD {
+  IMAGE = 1,
+  VIDEO = 2,
+}

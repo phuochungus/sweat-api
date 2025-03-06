@@ -24,6 +24,5 @@ export default () => ({
   },
   s3: {
     bucket: process.env.AWS_S3_BUCKET,
-    s3PublicUrl: process.env.AWS_S3_PUBLIC_URL,
   },
 });
