@@ -8,13 +8,14 @@ import {
   version as pkgVersion,
 } from '../package.json';
 import { ValidationPipe } from '@nestjs/common';
-import * as firebaseKey from '../serviceAccountKey.json';
 import * as admin from 'firebase-admin';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   admin.initializeApp({
-    credential: admin.credential.cert(firebaseKey as any),
+    credential: admin.credential.cert(
+      JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY),
+    ),
   });
   const options = new DocumentBuilder()
     .setTitle(pkgName)

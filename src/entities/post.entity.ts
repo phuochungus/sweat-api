@@ -27,19 +27,16 @@ export class Post extends BaseEntity {
   @Column()
   user_id!: number;
 
+  @Column({ nullable: true })
+  location?: string;
+
   @ManyToOne(() => User, (user) => user.posts)
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @OneToMany(() => PostTag, (postTag) => postTag.post)
+  @OneToMany(() => PostTag, (postTag) => postTag.post, { cascade: true })
   tags: PostTag[];
 
   @OneToMany(() => PostMedia, (media) => media.post)
   media: PostMedia[];
-
-  @OneToMany(() => PostComment, (comment) => comment.post)
-  comments: PostComment[];
-
-  @OneToMany(() => PostReact, (react) => react.post)
-  reacts: PostReact[];
 }

@@ -21,11 +21,6 @@ export class PostComment extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @ManyToOne(() => Post, (post) => post.comments)
-  @JoinColumn({ name: 'post_id' })
-  post: Post;
-
-  @ManyToOne(() => PostComment)
-  @JoinColumn({ name: 'reply_of' })
-  parentComment: PostComment;
+  @Column({ nullable: true })
+  parentCommentId?: number;
 }

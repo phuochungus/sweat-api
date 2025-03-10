@@ -18,8 +18,4 @@ export class PostReact extends BaseEntity {
   @ManyToOne(() => User, (user) => user.reacts)
   @JoinColumn({ name: 'user_id' })
   user: User;
-
-  @ManyToOne(() => Post, (post) => post.reacts)
-  @JoinColumn({ name: 'post_id' })
-  post: Post;
 }
