@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { PostPrivacy } from 'src/common/enums';
+import { PostMedia } from 'src/entities';
 import { PostTagDto } from 'src/post/dto/create-post-tag.dto';
 
 export class CreatePostDto {
@@ -14,4 +15,9 @@ export class CreatePostDto {
 
   @ApiProperty({ type: [PostTagDto] })
   tags: PostTagDto[];
+
+  @ApiProperty({
+    type: [PostMedia],
+  })
+  postMedia: PostMedia[];
 }

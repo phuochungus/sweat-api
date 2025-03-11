@@ -36,7 +36,4 @@ export class Post extends BaseEntity {
 
   @OneToMany(() => PostTag, (postTag) => postTag.post, { cascade: true })
   tags: PostTag[];
-
-  @OneToMany(() => PostMedia, (media) => media.post)
-  media: PostMedia[];
 }

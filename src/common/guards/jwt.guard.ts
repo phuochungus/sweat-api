@@ -15,8 +15,11 @@ export class JwtGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const authorization =
       request.headers['authorization'] || request.headers['Authorization'];
-    const uid = request.headers['uid'] || request.headers['Uid'];
-    const [_, token] = authorization.split(' ');
+    const uid = request.headers['x-uid'];
+    if (!authorization) {
+      return false;
+    }
+    const [_, token] = authorization?.split(' ');
     let user;
     if (token != process.env.ADMIN_TOKEN) {
       let firebase_id = '';
@@ -32,7 +35,10 @@ export class JwtGuard implements CanActivate {
         },
       });
       if (!user) {
-        await this.userRepository.insert({});
+        user = this.userRepository.create({
+          firebase_id,
+        });
+        await this.userRepository.save(user);
       }
     } else {
       user = await this.userRepository.findOne({
@@ -40,7 +46,12 @@ export class JwtGuard implements CanActivate {
           id: uid,
         },
       });
-      if (!user) return false;
+      if (!user) {
+        user = this.userRepository.create({
+          id: uid,
+        });
+        await this.userRepository.save(user);
+      }
     }
 
     request.user = user;

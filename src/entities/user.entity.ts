@@ -16,11 +16,11 @@ export class User extends BaseEntity {
   @Column({ nullable: true })
   avatar?: string;
 
-  @Column({ type: 'enum', enum: UserGender })
+  @Column({ type: 'enum', enum: UserGender, nullable: true })
   gender?: UserGender;
 
-  @Column()
-  firebase_id!: string;
+  @Column({ nullable: true })
+  firebase_id?: string;
 
   @OneToMany(() => Post, (post) => post.user)
   posts: Post[];

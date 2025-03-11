@@ -21,14 +21,4 @@ export class PostMediaController {
       body?.files.map((file) => ({ ...file, id: userId })),
     );
   }
-
-  @Post('/')
-  async createPostMedia(@Body() body: CreatePostMediaDto) {
-    return await this.postMediaService.create(body);
-  }
-
-  @Get('/')
-  async findAllPostMedia() {
-    return await this.postMediaService.findAll();
-  }
 }

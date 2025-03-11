@@ -15,17 +15,15 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { DataSource } from 'typeorm';
 import { ApiResponse } from '@nestjs/swagger';
 import { PageDto } from 'src/common/dto';
-import { User } from 'src/common/decorators';
+import { Auth, User } from 'src/common/decorators';
 import { FilterPostsDto } from 'src/post/dto/filter-posts.dto';
 import { JwtGuard } from 'src/common/guards';
 
 @Controller('post')
+@Auth()
 @UseGuards(JwtGuard)
 export class PostController {
-  constructor(
-    private readonly postService: PostService,
-    private dataSource: DataSource,
-  ) {}
+  constructor(private readonly postService: PostService) {}
 
   @Post()
   create(@Body() createPostDto: CreatePostDto) {

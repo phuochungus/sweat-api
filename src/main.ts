@@ -30,6 +30,11 @@ async function bootstrap() {
       description: 'Enter JWT token',
       in: 'header',
     })
+    .addGlobalParameters({
+      in: 'header',
+      required: false,
+      name: 'x-uid',
+    })
     .build();
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('docs', app, document, {
