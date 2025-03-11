@@ -1,10 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { CreatePostMediaDto } from './dto/create-post-media.dto';
 import { UpdatePostMediaDto } from './dto/update-post-media.dto';
 import { S3Service } from 'src/aws/s3/s3.service';
 import { Repository } from 'typeorm';
 import { PostMedia } from 'src/entities/post-media.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PageDto, PageMetaDto } from 'src/common/dto';
 
 @Injectable()
 export class PostMediaService {
@@ -14,21 +15,35 @@ export class PostMediaService {
   ) {}
 
   async create(createPostMediaDto: CreatePostMediaDto) {
-    let { url } = createPostMediaDto;
-    url = url.replace(
-      'sweatstorage.s3.ap-southeast-1.amazonaws.com',
-      'd9r09nvm11mhg.cloudfront.net', //CDN
-    );
-
-    const postMedia = await this.postMediaRepository.insert({
-      ...createPostMediaDto,
-      url,
+    const post = await this.postMediaRepository.findOne({
+      where: {
+        id: createPostMediaDto.post_id,
+      },
     });
+
+    if (!post) {
+      throw new BadRequestException({
+        message: 'Post not found',
+      });
+    }
+    const postMedia = await this.postMediaRepository.insert(createPostMediaDto);
     return postMedia;
   }
 
-  async findAll() {
-    return await this.postMediaRepository.findAndCount();
+  async findAll({ postId }, { currentUserId }) {
+    const [item, itemCount] = await this.postMediaRepository.findAndCount({
+      where: {
+        post_id: postId,
+      },
+    });
+
+    return new PageDto(
+      item,
+      new PageMetaDto({
+        itemCount,
+        pageOptionsDto: { page: 1, take: itemCount },
+      }),
+    );
   }
 
   findOne(id: number) {

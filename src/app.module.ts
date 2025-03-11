@@ -8,6 +8,7 @@ import { AwsModule } from 'src/aws/aws.module';
 import { PostModule } from './post/post.module';
 import { PostMediaModule } from './post-media/post-media.module';
 import { UserModule } from './user/user.module';
+import { UserFriendModule } from './user-friend/user-friend.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { UserModule } from './user/user.module';
     PostModule,
     PostMediaModule,
     UserModule,
+    UserFriendModule,
   ],
   controllers: [AppController],
   providers: [AppService],

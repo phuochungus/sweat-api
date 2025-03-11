@@ -4,9 +4,10 @@ import { PostMediaController } from './post-media.controller';
 import { AwsModule } from 'src/aws/aws.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostMedia } from 'src/entities/post-media.entity';
+import { User } from 'src/entities';
 
 @Module({
-  imports: [AwsModule, TypeOrmModule.forFeature([PostMedia])],
+  imports: [AwsModule, TypeOrmModule.forFeature([PostMedia, User])],
   controllers: [PostMediaController],
   providers: [PostMediaService],
 })
