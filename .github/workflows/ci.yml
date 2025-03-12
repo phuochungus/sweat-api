@@ -37,14 +37,8 @@ jobs:
           USER: ${{ secrets.EC2_USER }}
         run: |
           echo "$PRIVATE_KEY" > github-ec2.pem && chmod 600 github-ec2.pem
-          ssh -o StrictHostKeyChecking=no -i github-ec2.pem ${USER}@${HOST}
+          ssh -i github-ec2.pem ${USER}@${HOST}
           docker pull ${{ secrets.DOCKER_USERNAME }}/sweat-api:${{ env.GIT_SHA }}
           docker stop sweat-api || true
           docker rm sweat-api || true
           docker run -d --name sweat-api -p 443:3000 -e NODE_ENV=production --restart always ${{ secrets.DOCKER_USERNAME }}/sweat-api:${{ env.GIT_SHA }}
-
-  
-          echo "Starting/restarting application..."
-          pm2 restart server.js || pm2 start server.js
-          '
-          
