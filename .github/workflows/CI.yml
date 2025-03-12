@@ -30,17 +30,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Get short Git SHA
-        run: echo "GIT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+      - name: Deploy to EC2
+        env:
+          PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY  }}
+          HOST: ${{ secrets.EC2_HOST }}
+          USER: ${{ secrets.EC2_USER }}
+        run: |
+          echo "$PRIVATE_KEY" > github-ec2.pem && chmod 600 github-ec2.pem
+          ssh -o StrictHostKeyChecking=no -i github-ec2.pem ${USER}@${HOST}
+          docker pull ${{ secrets.DOCKER_USERNAME }}/sweat-api:${{ env.GIT_SHA }}
+          docker stop sweat-api || true
+          docker rm sweat-api || true
+          docker run -d --name sweat-api -p 443:3000 -e NODE_ENV=production --restart always ${{ secrets.DOCKER_USERNAME }}/sweat-api:${{ env.GIT_SHA }}
 
-      - name: SSH into EC2 and deploy
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            docker pull ${{ secrets.DOCKER_USERNAME }}/sweat-api:${{ env.GIT_SHA }}
-            docker stop sweat-api || true
-            docker rm sweat-api || true
-            docker run -d --name sweat-api -p 443:3000 -e NODE_ENV=production --restart always ${{ secrets.DOCKER_USERNAME }}/sweat-api:${{ env.GIT_SHA }}
+  
+          echo "Starting/restarting application..."
+          pm2 restart server.js || pm2 start server.js
+          '
+          
