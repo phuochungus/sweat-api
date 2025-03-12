@@ -3,9 +3,6 @@ import { BaseEntity } from './base.entity';
 import { User } from './user.entity';
 import { PostPrivacy } from 'src/common/enums';
 import { PostTag } from './post-tag.entity';
-import { PostMedia } from './post-media.entity';
-import { PostComment } from './post-comment.entity';
-import { PostReact } from './post-react.entity';
 
 @Entity('post')
 export class Post extends BaseEntity {
