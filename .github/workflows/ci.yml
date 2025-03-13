@@ -43,6 +43,10 @@ jobs:
           script: |
             aws ssm get-parameter --name "sweat" --with-decryption --query "Parameter.Value" --output text --region ap-southeast-1 > .env
             docker pull ${{ secrets.DOCKER_USERNAME }}/sweat-api:${{ env.GIT_SHA }}
-            docker ps -q --filter "name=sweat-api" | grep -q . && docker stop sweat-api
-            docker ps -q --filter "name=sweat-api" | grep -q . && docker rm sweat-api
+
+            # Stop and remove the container if it exists
+            docker stop sweat-api || true
+            docker rm sweat-api || true
+
+            # Run the new container
             docker run -d --name sweat-api -p 80:3000 --env-file .env --restart always ${{ secrets.DOCKER_USERNAME }}/sweat-api:${{ env.GIT_SHA }}
