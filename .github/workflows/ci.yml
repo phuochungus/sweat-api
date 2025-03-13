@@ -36,8 +36,9 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
+          aws ssm get-parameter --name "sweat" --with-decryption --query "Parameter.Value" --output text --region ap-southeast-1 > .env
           docker pull ${{ secrets.DOCKER_USERNAME }}/sweat-api:${{ env.GIT_SHA }}
           docker stop sweat-api || true
           docker rm sweat-api || true
-          docker run -d --name sweat-api -p 443:3000 -e NODE_ENV=production --restart always ${{ secrets.DOCKER_USERNAME }}/sweat-api:${{ env.GIT_SHA }}
+          docker run -d --name sweat-api -p 443:3000 --env-file .env --restart always ${{ secrets.DOCKER_USERNAME }}/sweat-api:${{ env.GIT_SHA }}
 
