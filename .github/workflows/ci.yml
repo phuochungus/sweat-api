@@ -8,6 +8,8 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    outputs:
+      GIT_SHA: ${{ steps.get_sha.outputs.GIT_SHA }}
 
     steps:
       - name: Checkout repository
@@ -17,7 +19,8 @@ jobs:
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
       - name: Get short Git SHA
-        run: echo "GIT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        id: get_sha
+        run: echo "GIT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV && echo "::set-output name=GIT_SHA::$(git rev-parse --short HEAD)"
 
       - name: Build and tag Docker image
         run: docker build -t ${{ secrets.DOCKER_USERNAME }}/sweat-api:${{ env.GIT_SHA }} .
@@ -28,8 +31,10 @@ jobs:
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
+    env:
+      GIT_SHA: ${{ needs.build-and-push.outputs.GIT_SHA }}
     steps:
-      - name: multiple command
+      - name: Deploy to EC2
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
