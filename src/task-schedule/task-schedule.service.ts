@@ -4,14 +4,14 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class TaskScheduleService {
-    constructor(private configService: ConfigService) { }
+  constructor(private configService: ConfigService) {}
 
-    @Cron('*/14 * * * *')
-    async handleCron() {
-        const renderAppUrl = this.configService.get('RENDER_APP_URL');
-        if (!renderAppUrl) {
-            return;
-        }
-        const response = await fetch(renderAppUrl);
+  @Cron('*/14 * * * *')
+  async handleCron() {
+    const renderAppUrl = this.configService.get('RENDER_APP_URL');
+    if (!renderAppUrl) {
+      return;
     }
+    const response = await fetch(renderAppUrl);
+  }
 }
