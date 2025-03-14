@@ -27,7 +27,7 @@ export class Post extends BaseEntity {
   @Column({ nullable: true })
   location?: string;
 
-  @ManyToOne(() => User, (user) => user.posts)
+  @ManyToOne(() => User)
   @JoinColumn({ name: 'user_id' })
   user: User;
 

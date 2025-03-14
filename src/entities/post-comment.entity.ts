@@ -17,7 +17,7 @@ export class PostComment extends BaseEntity {
   @Column({ nullable: true })
   reply_of?: number;
 
-  @ManyToOne(() => User, (user) => user.comments)
+  @ManyToOne(() => User)
   @JoinColumn({ name: 'user_id' })
   user: User;
 

@@ -33,7 +33,7 @@ export class Match extends BaseEntity {
   @Column({ type: 'time without time zone' })
   end_datetime!: Date;
 
-  @ManyToOne(() => User, (user) => user.matches)
+  @ManyToOne(() => User)
   @JoinColumn({ name: 'user_id' })
   user: User;
 

@@ -11,7 +11,7 @@ export class PostTag extends BaseEntity {
   @Column()
   post_id!: number;
 
-  @ManyToOne(() => User, (user) => user.postTags)
+  @ManyToOne(() => User)
   @JoinColumn({ name: 'user_id' })
   user: User;
 

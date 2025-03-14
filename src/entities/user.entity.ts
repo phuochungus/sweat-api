@@ -14,32 +14,21 @@ export class User extends BaseEntity {
   fullname?: string;
 
   @Column({ nullable: true })
-  avatar?: string;
+  avatar_url?: string;
+
+  @Column({ nullable: true })
+  cover_url?: string;
+
+  @Column({ nullable: true })
+  bio?: string;
+
+  @Column({ nullable: true })
+  birthday?: Date;
 
   @Column({ type: 'enum', enum: UserGender, nullable: true })
   gender?: UserGender;
 
   @Column({ nullable: true })
   firebase_id?: string;
-
-  @OneToMany(() => Post, (post) => post.user)
-  posts: Post[];
-
-  @OneToMany(() => PostTag, (postTag) => postTag.user)
-  postTags: PostTag[];
-
-  @OneToMany(() => PostComment, (comment) => comment.user)
-  comments: PostComment[];
-
-  @OneToMany(() => PostReact, (react) => react.user)
-  reacts: PostReact[];
-
-  @OneToMany(() => UserFriendRequest, (request) => request.user)
-  sentFriendRequests: UserFriendRequest[];
-
-  @OneToMany(() => UserFriendRequest, (request) => request.targetUser)
-  receivedFriendRequests: UserFriendRequest[];
-
-  @OneToMany(() => Match, (match) => match.user)
-  matches: Match[];
+  
 }

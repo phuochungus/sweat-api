@@ -17,11 +17,11 @@ export class UserFriendRequest extends BaseEntity {
   })
   status!: string;
 
-  @ManyToOne(() => User, (user) => user.sentFriendRequests)
+  @ManyToOne(() => User)
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @ManyToOne(() => User, (user) => user.receivedFriendRequests)
+  @ManyToOne(() => User)
   @JoinColumn({ name: 'target_user_id' })
   targetUser: User;
 }
