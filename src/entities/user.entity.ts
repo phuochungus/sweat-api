@@ -30,5 +30,4 @@ export class User extends BaseEntity {
 
   @Column({ nullable: true })
   firebase_id?: string;
-  
 }
