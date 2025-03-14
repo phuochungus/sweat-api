@@ -9,6 +9,8 @@ import { PostModule } from './post/post.module';
 import { PostMediaModule } from './post-media/post-media.module';
 import { UserModule } from './user/user.module';
 import { UserFriendModule } from './user-friend/user-friend.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { TaskScheduleService } from './task-schedule/task-schedule.service';
 
 @Module({
   imports: [
@@ -16,6 +18,7 @@ import { UserFriendModule } from './user-friend/user-friend.module';
       load: [configuration],
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => {
         const config = configService.get('database');
@@ -34,6 +37,6 @@ import { UserFriendModule } from './user-friend/user-friend.module';
     UserFriendModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, TaskScheduleService],
 })
 export class AppModule {}
