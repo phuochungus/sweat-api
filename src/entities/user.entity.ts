@@ -1,33 +1,37 @@
-import { Entity, Column, OneToMany } from 'typeorm';
+import { Entity, Column } from 'typeorm';
 import { BaseEntity } from './base.entity';
-import { Post } from './post.entity';
-import { PostTag } from './post-tag.entity';
-import { PostComment } from './post-comment.entity';
-import { PostReact } from './post-react.entity';
-import { UserFriendRequest } from './user-friend-request.entity';
-import { Match } from './match.entity';
 import { UserGender } from 'src/common/enums';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 @Entity('user')
 export class User extends BaseEntity {
   @Column({ nullable: true })
+  @ApiPropertyOptional()
   fullname?: string;
 
   @Column({ nullable: true })
+  @ApiPropertyOptional()
   avatar_url?: string;
 
   @Column({ nullable: true })
+  @ApiPropertyOptional()
   cover_url?: string;
 
   @Column({ nullable: true })
+  @ApiPropertyOptional()
   bio?: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'time without time zone' })
+  @ApiPropertyOptional()
   birthday?: Date;
 
   @Column({ type: 'enum', enum: UserGender, nullable: true })
+  @ApiPropertyOptional()
   gender?: UserGender;
 
-  @Column({ nullable: true })
-  firebase_id?: string;
+  @Column({ nullable: false })
+  firebase_id!: string;
+
+  @Column({ nullable: false, default: 0 })
+  friend_count!: number;
 }

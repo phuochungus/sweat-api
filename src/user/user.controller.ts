@@ -1,30 +1,29 @@
 import {
   Controller,
-  Get,
   Post,
   Body,
   Patch,
   Param,
-  Delete,
   UseGuards,
   BadRequestException,
+  Get,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtGuard } from 'src/common/guards';
-import { User } from 'src/common/decorators';
+import { Auth, User } from 'src/common/decorators';
 
+@Auth()
+@UseGuards(JwtGuard)
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @UseGuards(JwtGuard)
   @Post('/')
   async createUser(@User() user) {
     return user;
   }
 
-  @UseGuards(JwtGuard)
   @Patch('/:id')
   async updateUser(
     @Body() updateUserDto: UpdateUserDto,
@@ -37,5 +36,10 @@ export class UserController {
       throw new BadRequestException('Id must be a number');
     }
     return this.userService.update(+id, updateUserDto);
+  }
+
+  @Get('/:id')
+  async getUser(@User() user) {
+    return user;
   }
 }

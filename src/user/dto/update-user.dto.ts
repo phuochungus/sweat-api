@@ -1,17 +1,16 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsNotEmpty } from 'class-validator';
-import { UserGender } from 'src/common/enums';
+import {
+  PartialType,
+  PickType,
+} from '@nestjs/swagger';
+import { User } from 'src/entities';
 
-export class UpdateUserDto {
-  @ApiProperty()
-  @IsNotEmpty()
-  fullname!: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  avatar!: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  gender!: UserGender;
-}
+export class UpdateUserDto extends PartialType(
+  PickType(User, [
+    'fullname',
+    'avatar_url',
+    'cover_url',
+    'bio',
+    'birthday',
+    'gender',
+  ] as const),
+) {}
