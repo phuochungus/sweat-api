@@ -24,7 +24,9 @@ export class UserFriendRequestController {
     @Body() createUserFriendRequestDto: CreateUserFriendRequestDto,
     @User('uid') user,
   ) {
-    return this.userFriendRequestService.create(createUserFriendRequestDto);
+    return this.userFriendRequestService.create(createUserFriendRequestDto, {
+      currentUserId: user,
+    });
   }
 
   @Get()
@@ -41,10 +43,14 @@ export class UserFriendRequestController {
   update(
     @Param('id') id: string,
     @Body() updateUserFriendRequestDto: UpdateUserFriendRequestDto,
+    @User() user,
   ) {
     return this.userFriendRequestService.update(
       +id,
       updateUserFriendRequestDto,
+      {
+        currentUserId: user,
+      },
     );
   }
 

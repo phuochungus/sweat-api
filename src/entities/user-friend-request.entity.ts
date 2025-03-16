@@ -1,7 +1,8 @@
-import { Entity, Column } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { FriendRequestStatus } from 'src/common/enums';
 import { ApiProperty } from '@nestjs/swagger';
+import { User } from 'src/entities';
 @Entity('user_friend_request')
 export class UserFriendRequest extends BaseEntity {
   @Column({ nullable: false })
@@ -18,4 +19,12 @@ export class UserFriendRequest extends BaseEntity {
     default: FriendRequestStatus.PENDING,
   })
   status!: FriendRequestStatus;
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'receiverUserId' })
+  receiverUser!: User;
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'senderUserId' })
+  senderUser!: User;
 }

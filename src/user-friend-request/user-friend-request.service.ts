@@ -1,19 +1,37 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserFriendRequestDto } from './dto/create-user-friend-request.dto';
 import { UpdateUserFriendRequestDto } from './dto/update-user-friend-request.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserFriendRequest } from 'src/entities';
+import { UserFriend, UserFriendRequest, UserNotification } from 'src/entities';
 import { Repository } from 'typeorm';
+import { FriendRequestStatus } from 'src/common/enums';
 
 @Injectable()
 export class UserFriendRequestService {
   constructor(
     @InjectRepository(UserFriendRequest)
     private userFriendRequestRepository: Repository<UserFriendRequest>,
+    @InjectRepository(UserNotification)
+    private userNotificationRepository: Repository<UserNotification>,
+    @InjectRepository(UserFriend)
+    private userFriendRepository: Repository<UserFriend>,
   ) {}
 
-  create(createUserFriendRequestDto: CreateUserFriendRequestDto) {
-    return 'This action adds a new userFriendRequest';
+  async create(
+    createUserFriendRequestDto: CreateUserFriendRequestDto,
+    { currentUserId },
+  ) {
+    await this.userFriendRequestRepository.insert({
+      senderUserId: currentUserId,
+      receiverUserId: createUserFriendRequestDto.receiverUserId,
+      status: FriendRequestStatus.PENDING,
+    });
+
+    //todo: send notification to receiver
   }
 
   findAll() {
@@ -24,8 +42,38 @@ export class UserFriendRequestService {
     return `This action returns a #${id} userFriendRequest`;
   }
 
-  update(id: number, updateUserFriendRequestDto: UpdateUserFriendRequestDto) {
-    return `This action updates a #${id} userFriendRequest`;
+  async update(
+    friendRequestId: number,
+    updateUserFriendRequestDto: UpdateUserFriendRequestDto,
+    { currentUserId },
+  ) {
+    const { status } = updateUserFriendRequestDto;
+    const friendRequest = await this.userFriendRequestRepository.findOne({
+      where: { id: friendRequestId },
+    });
+    if (!friendRequest) {
+      throw new NotFoundException('Friend request not found');
+    }
+
+    if (
+      status != friendRequest.status &&
+      friendRequest.receiverUserId !== currentUserId
+    ) {
+      throw new ForbiddenException(
+        'You are not allowed to accept this request',
+      );
+    }
+
+    await this.userFriendRequestRepository.update(friendRequestId, {
+      status,
+    });
+
+    await this.userFriendRepository.insert({
+      user_id1: friendRequest.senderUserId,
+      user_id2: friendRequest.receiverUserId,
+    });
+
+    //todo: send notification to sender if request is accepted
   }
 
   remove(id: number) {
