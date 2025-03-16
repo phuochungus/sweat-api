@@ -19,11 +19,6 @@ import { Auth, User } from 'src/common/decorators';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post('/')
-  async createUser(@User() user) {
-    return user;
-  }
-
   @Patch('/:id')
   async updateUser(
     @Body() updateUserDto: UpdateUserDto,
@@ -38,7 +33,7 @@ export class UserController {
     return this.userService.update(+id, updateUserDto);
   }
 
-  @Get('/:id')
+  @Get('/login')
   async getUser(@User() user) {
     return user;
   }

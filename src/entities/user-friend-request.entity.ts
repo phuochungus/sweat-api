@@ -5,10 +5,10 @@ import { FriendRequestStatus } from 'src/common/enums';
 @Entity('user_friend_request')
 export class UserFriendRequest extends BaseEntity {
   @Column()
-  user_id!: number;
+  senderUserId!: number;
 
   @Column()
-  target_user_id!: number;
+  receiverUserId!: number;
 
   @Column({
     type: 'enum',
@@ -16,12 +16,4 @@ export class UserFriendRequest extends BaseEntity {
     default: FriendRequestStatus.PENDING,
   })
   status!: string;
-
-  @ManyToOne(() => User)
-  @JoinColumn({ name: 'user_id' })
-  user: User;
-
-  @ManyToOne(() => User)
-  @JoinColumn({ name: 'target_user_id' })
-  targetUser: User;
 }

@@ -1,44 +1,78 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { CreateUserFriendDto } from './dto/create-user-friend.dto';
-import { UpdateUserFriendDto } from './dto/update-user-friend.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { UserFriend } from 'src/entities';
-import { DataSource, Repository } from 'typeorm';
+import { User, UserFriend } from 'src/entities';
+import { DataSource } from 'typeorm';
+import { FilterFriendsDto } from 'src/user-friend/dto/filter-posts.dto';
+import { PageDto, PageMetaDto } from 'src/common/dto';
 
 @Injectable()
 export class UserFriendService {
   constructor(private readonly dataSource: DataSource) {}
-  create(createUserFriendDto: CreateUserFriendDto) {
-    return 'This action adds a new userFriend';
-  }
 
-  async getUserFriends({ userId }, { currentUserId }) {
+  async getFriends(filterFriendsDto: FilterFriendsDto, { currentUserId }) {
+    const { userId, page, take, query, withCommonFriendsCount } =
+      filterFriendsDto;
+
     if (userId !== currentUserId) {
       throw new ForbiddenException({
         message: 'You are not allowed to access this resource',
       });
     }
-    const result = await this.dataSource
-      .createQueryBuilder(UserFriend, 'uf')
-      .select(
-        `CASE WHEN uf.uid1 = :userId THEN uf.uid2 ELSE uf.uid1 END`,
-        'friend_id',
+
+    // Start QueryBuilder for fetching friends
+    const queryBuilder = this.dataSource
+      .createQueryBuilder(User, 'u')
+      .innerJoin(
+        UserFriend,
+        'uf',
+        `u.id = CASE WHEN uf.user_id1 = :userId THEN uf.user_id2 ELSE uf.user_id1 END`,
       )
-      .where('uf.uid1 = :userId OR uf.uid2 = :userId', { userId })
-      .getRawMany();
+      .where('uf.user_id1 = :userId OR uf.user_id2 = :userId', { userId });
 
-    return result.map((row) => row.friend_id);
-  }
+    if (query) {
+      queryBuilder.andWhere('u.username LIKE :query', { query: `%${query}%` });
+    }
 
-  findOne(id: number) {
-    return `This action returns a #${id} userFriend`;
-  }
+    // Add the common friends count calculation
+    // This subquery counts mutual friends between the current user and each friend
+    queryBuilder.addSelect((subQuery) => {
+      return subQuery
+        .select('COUNT(*)')
+        .from(UserFriend, 'uf1')
+        .innerJoin(
+          UserFriend,
+          'uf2',
+          '(uf1.user_id1 = uf2.user_id1 OR uf1.user_id1 = uf2.user_id2 OR uf1.user_id2 = uf2.user_id1 OR uf1.user_id2 = uf2.user_id2) AND uf1.id != uf2.id',
+        )
+        .where(
+          '(uf1.user_id1 = :userId OR uf1.user_id2 = :userId) AND (uf2.user_id1 = u.id OR uf2.user_id2 = u.id)',
+          { userId },
+        );
+    }, 'commonFriends');
 
-  update(id: number, updateUserFriendDto: UpdateUserFriendDto) {
-    return `This action updates a #${id} userFriend`;
-  }
+    // Fetch friends list
+    const [friends, totalFriendsCount] = await Promise.all([
+      queryBuilder
+        .take(take)
+        .skip((page - 1) * take)
+        .getRawMany(),
+      this.dataSource
+        .createQueryBuilder(UserFriend, 'uf')
+        .where('uf.user_id1 = :userId OR uf.user_id2 = :userId', { userId })
+        .getCount(),
+    ]);
 
-  remove(id: number) {
-    return `This action removes a #${id} userFriend`;
+    // Transform the raw results to include commonFriends as a numeric value
+    const transformedFriends = friends.map((friend) => ({
+      ...friend,
+      commonFriends: parseInt(friend.commonFriends) || 0,
+    }));
+
+    // Create paginated response
+    const pageMetaDto = new PageMetaDto({
+      itemCount: totalFriendsCount,
+      pageOptionsDto: { page, take },
+    });
+
+    return new PageDto(transformedFriends, pageMetaDto);
   }
 }

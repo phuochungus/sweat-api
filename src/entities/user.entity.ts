@@ -1,8 +1,9 @@
-import { Entity, Column } from 'typeorm';
+import { Entity, Column, OneToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { UserGender } from 'src/common/enums';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
+import { UserSetting } from 'src/entities';
 
 @Entity('user')
 export class User extends BaseEntity {
