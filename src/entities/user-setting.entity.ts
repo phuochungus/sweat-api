@@ -18,6 +18,7 @@ export class UserSetting extends BaseEntity {
   language!: Country;
 
   @ApiProperty({ default: true })
+  @Column({ default: true })
   notification!: boolean;
 
   @OneToOne(() => User)

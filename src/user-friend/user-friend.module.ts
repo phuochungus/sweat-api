@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { UserFriendService } from './user-friend.service';
 import { UserFriendController } from './user-friend.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserFriend } from 'src/entities';
+import { User, UserFriend } from 'src/entities';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserFriend])],
+  imports: [TypeOrmModule.forFeature([UserFriend, User])],
   controllers: [UserFriendController],
   providers: [UserFriendService],
   exports: [UserFriendService],

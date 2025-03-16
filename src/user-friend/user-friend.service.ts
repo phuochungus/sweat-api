@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { User, UserFriend } from 'src/entities';
 import { DataSource } from 'typeorm';
-import { FilterFriendsDto } from 'src/user-friend/dto/filter-posts.dto';
+import { FilterFriendsDto } from 'src/user-friend/dto/filter-friend.dto';
 import { PageDto, PageMetaDto } from 'src/common/dto';
 
 @Injectable()
@@ -11,12 +11,6 @@ export class UserFriendService {
   async getFriends(filterFriendsDto: FilterFriendsDto, { currentUserId }) {
     const { userId, page, take, query, withCommonFriendsCount } =
       filterFriendsDto;
-
-    if (userId !== currentUserId) {
-      throw new ForbiddenException({
-        message: 'You are not allowed to access this resource',
-      });
-    }
 
     // Start QueryBuilder for fetching friends
     const queryBuilder = this.dataSource

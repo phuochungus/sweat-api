@@ -9,6 +9,7 @@ import {
 } from '../package.json';
 import { ValidationPipe } from '@nestjs/common';
 import * as admin from 'firebase-admin';
+import { HttpExceptionFilter } from 'src/common/exception-filters/http-exception-filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -43,6 +44,7 @@ async function bootstrap() {
   });
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   await app.listen(process.env.PORT ?? 3000);
 

@@ -21,6 +21,7 @@ export class JwtGuard implements CanActivate {
     }
     const [_, token] = authorization?.split(' ');
     let user;
+    console.log('token', token);
     if (token != process.env.ADMIN_TOKEN) {
       let firebase_id = '';
       try {
