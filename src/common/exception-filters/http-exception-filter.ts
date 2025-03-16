@@ -12,13 +12,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const statusCode = exception?.status || 500;
     const message = exception?.message || 'Internal server error';
 
-    // Prepare response body
     const responseBody = {
       statusCode,
       message,
     };
 
-    if (isDev) {
+    if (isDev && statusCode == 500) {
       (responseBody as any).error_stack = JSON.stringify(
         exception,
         Object.getOwnPropertyNames(exception),
