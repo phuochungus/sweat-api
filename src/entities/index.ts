@@ -1,5 +1,3 @@
-export * from './match-attendee.entity';
-export * from './match.entity';
 export * from './post-comment.entity';
 export * from './post-media.entity';
 export * from './post-react.entity';
