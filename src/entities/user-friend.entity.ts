@@ -4,8 +4,8 @@ import { BaseEntity } from './base.entity';
 @Entity('user_friend')
 export class UserFriend extends BaseEntity {
   @Column()
-  user_id1!: number;
+  userId1!: number;
 
   @Column()
-  user_id2!: number;
+  userId2!: number;
 }

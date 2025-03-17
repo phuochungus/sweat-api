@@ -19,10 +19,10 @@ import { Auth, User } from 'src/common/decorators';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Patch('/:id')
+  @Patch('/')
   async updateUser(
+    @User('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
-    @Param('id') id: string,
   ) {
     if (!id) {
       throw new BadRequestException('Id is required');
@@ -34,7 +34,7 @@ export class UserController {
   }
 
   @Get('/login')
-  async getUser(@User('uid') user) {
+  async getUser(@User() user) {
     return user;
   }
 }

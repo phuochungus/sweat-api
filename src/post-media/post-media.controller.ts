@@ -17,7 +17,7 @@ export class PostMediaController {
 
   @Post('/upload/generate-link')
   async batchGeneratePresignedUrl(
-    @User('uid') userId: string,
+    @User('id') userId: string,
     @Body() body: GenerateUploadLink,
   ) {
     return this.s3Service.batchGeneratePresignedUrl(
@@ -32,7 +32,7 @@ export class PostMediaController {
   }
 
   @Get('/post/:id')
-  async getPostMedia(@User('uid') userId: string, @Param('id') postId: string) {
+  async getPostMedia(@User('id') userId: string, @Param('id') postId: string) {
     return this.postMediaService.findAll(
       {
         postId,

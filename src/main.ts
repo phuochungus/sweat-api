@@ -13,7 +13,9 @@ import { HttpExceptionFilter } from 'src/common/exception-filters/http-exception
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  app.useGlobalFilters(new HttpExceptionFilter());
+  app.setGlobalPrefix('api');
   admin.initializeApp({
     credential: admin.credential.cert(
       JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY),
@@ -42,10 +44,6 @@ async function bootstrap() {
   SwaggerModule.setup('docs', app, document, {
     swaggerOptions: { displayRequestDuration: true },
   });
-
-  app.useGlobalPipes(new ValidationPipe({ transform: true }));
-  app.useGlobalFilters(new HttpExceptionFilter());
-  app.setGlobalPrefix('api');
 
   await app.listen(process.env.PORT ?? 3000);
 

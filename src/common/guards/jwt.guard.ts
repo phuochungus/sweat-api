@@ -32,12 +32,12 @@ export class JwtGuard implements CanActivate {
       }
       user = await this.userRepository.findOne({
         where: {
-          firebase_id,
+          firebaseId: firebase_id,
         },
       });
       if (!user) {
         user = this.userRepository.create({
-          firebase_id,
+          firebaseId: firebase_id,
         });
         await this.userRepository.save(user);
       }

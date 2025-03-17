@@ -69,8 +69,8 @@ export class UserFriendRequestService {
     });
 
     await this.userFriendRepository.insert({
-      user_id1: friendRequest.senderUserId,
-      user_id2: friendRequest.receiverUserId,
+      userId1: friendRequest.senderUserId,
+      userId2: friendRequest.receiverUserId,
     });
 
     //todo: send notification to sender if request is accepted

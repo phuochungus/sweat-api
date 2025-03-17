@@ -1,6 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { PickType } from '@nestjs/swagger';
+import { PostTag } from 'src/entities';
 
-export class PostTagDto {
-  @ApiProperty()
-  user_id: number;
-}
+export class PostTagDto extends PickType(PostTag, ['userId'] as const) {}

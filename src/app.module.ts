@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import configuration from 'src/config/configuration';
 import { AwsModule } from 'src/aws/aws.module';
 import { PostModule } from './post/post.module';
@@ -23,7 +23,7 @@ import { UserFriendRequestModule } from './user-friend-request/user-friend-reque
     ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => {
-        const config = configService.get('database');
+        const config: TypeOrmModuleOptions = configService.get('database');
         if (!config) {
           throw new Error('Cannot start app without ORM config');
         }

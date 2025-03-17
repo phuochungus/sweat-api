@@ -5,7 +5,7 @@ import { NOTIFICATION_TYPE, NotificationStatus } from 'src/common/enums';
 @Entity('user_notification')
 export class UserNotification extends BaseEntity {
   @Column()
-  receiver_id!: number;
+  receiverId!: number;
 
   @Column()
   text!: string;

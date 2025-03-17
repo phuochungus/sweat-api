@@ -32,7 +32,7 @@ export class PostController {
 
   @Get()
   @ApiResponse({ type: PageDto })
-  async findAll(@User('uid') user_id: number, @Query() q: FilterPostsDto) {
+  async findAll(@User('id') user_id: number, @Query() q: FilterPostsDto) {
     return this.postService.findAll(q, { currentUserId: user_id });
   }
 

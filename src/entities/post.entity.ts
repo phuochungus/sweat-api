@@ -10,19 +10,19 @@ export class Post extends BaseEntity {
   text!: string;
 
   @Column({ default: 0 })
-  comment_count!: number;
+  commentCount!: number;
 
   @Column({ default: 0 })
-  react_count!: number;
+  reactCount!: number;
 
   @Column({ default: 0 })
-  media_count!: number;
+  mediaCount!: number;
 
   @Column({ type: 'enum', enum: PostPrivacy })
   privacy!: PostPrivacy;
 
   @Column()
-  user_id!: number;
+  userId!: number;
 
   @Column({ nullable: true })
   location?: string;

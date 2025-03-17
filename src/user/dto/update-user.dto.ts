@@ -4,10 +4,11 @@ import { User } from 'src/entities';
 export class UpdateUserDto extends PartialType(
   PickType(User, [
     'fullname',
-    'avatar_url',
-    'cover_url',
+    'avatarUrl',
+    'coverUrl',
     'bio',
     'birthday',
     'gender',
+    'firebaseId',
   ] as const),
 ) {}

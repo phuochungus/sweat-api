@@ -9,7 +9,7 @@ export class UserFriendController {
 
   @Get('/')
   async getFriends(
-    @User('uid') currentUserId: number,
+    @User('id') currentUserId: number,
     @Query() q: FilterFriendsDto,
   ) {
     return this.userFriendService.getFriends(q, { currentUserId });

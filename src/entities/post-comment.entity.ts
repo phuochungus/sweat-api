@@ -6,16 +6,16 @@ import { Post } from './post.entity';
 @Entity('post_comment')
 export class PostComment extends BaseEntity {
   @Column()
-  user_id!: number;
+  userId!: number;
 
   @Column()
-  post_id!: number;
+  postId!: number;
 
   @Column()
   text!: string;
 
   @Column({ nullable: true })
-  reply_of?: number;
+  replyOf?: number;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'user_id' })

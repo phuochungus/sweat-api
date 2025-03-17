@@ -33,7 +33,7 @@ export class PostMediaService {
   async findAll({ postId }, { currentUserId }) {
     const [item, itemCount] = await this.postMediaRepository.findAndCount({
       where: {
-        post_id: postId,
+        postId: postId,
       },
     });
 

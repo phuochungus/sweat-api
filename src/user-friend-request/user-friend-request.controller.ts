@@ -22,7 +22,7 @@ export class UserFriendRequestController {
   @Post()
   create(
     @Body() createUserFriendRequestDto: CreateUserFriendRequestDto,
-    @User('uid') user,
+    @User('id') user,
   ) {
     return this.userFriendRequestService.create(createUserFriendRequestDto, {
       currentUserId: user,

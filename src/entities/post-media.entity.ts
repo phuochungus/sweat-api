@@ -6,7 +6,7 @@ import { MediaType } from 'src/common/enums';
 @Entity('post_media')
 export class PostMedia extends BaseEntity {
   @Column()
-  post_id!: number;
+  postId!: number;
 
   @Column()
   priority!: number;
