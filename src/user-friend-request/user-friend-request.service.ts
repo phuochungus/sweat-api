@@ -17,6 +17,7 @@ import { FilterFriendRequestDto } from 'src/user-friend-request/dto/filter-frien
 import { PageDto, PageMetaDto } from 'src/common/dto';
 import { SOCIAL } from 'src/user-notification/enum';
 import { UserFriendService } from 'src/user-friend/user-friend.service';
+import { TEMPLATE } from 'src/user-notification/template';
 
 @Injectable()
 export class UserFriendRequestService {
@@ -29,6 +30,11 @@ export class UserFriendRequestService {
     createUserFriendRequestDto: CreateUserFriendRequestDto,
     { currentUserId },
   ) {
+    const currentUser = await this.dataSource
+      .createQueryBuilder(User, 'u')
+      .where('u.id = :id', { id: currentUserId })
+      .getOne();
+
     const areFriends = await this.userFriendService.areFriends(
       currentUserId,
       createUserFriendRequestDto.receiverUserId,
@@ -50,6 +56,23 @@ export class UserFriendRequestService {
       .execute();
 
     //todo: send notification to receiver
+
+    await this.dataSource
+      .createQueryBuilder(UserNotification, 'un')
+      .insert()
+      .values([
+        {
+          receiverUserId: createUserFriendRequestDto.receiverUserId,
+          senderUserId: currentUserId,
+          text: TEMPLATE.CREATE_FRIEND_REQUEST.replace(
+            '<name>',
+            currentUser.fullname,
+          ),
+          status: NotificationStatus.UNREAD,
+          type: SOCIAL.CREATE_FRIEND_REQUEST,
+        },
+      ])
+      .execute();
   }
 
   async findAll(

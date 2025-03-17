@@ -3,10 +3,17 @@ import { BaseEntity } from './base.entity';
 import { User } from './user.entity';
 import { NotificationStatus } from 'src/common/enums';
 import { SOCIAL } from 'src/user-notification/enum';
+import { Post } from 'src/entities/post.entity';
 @Entity('user_notification')
 export class UserNotification extends BaseEntity {
   @Column()
   receiverUserId!: number;
+
+  @Column({ nullable: true })
+  senderUserId?: number;
+
+  @Column({ nullable: true })
+  postId?: number;
 
   @Column()
   text!: string;
@@ -24,4 +31,12 @@ export class UserNotification extends BaseEntity {
   @ManyToOne(() => User)
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'senderUserId' })
+  senderUser: User;
+
+  @ManyToOne(() => Post)
+  @JoinColumn({ name: 'postId' })
+  post: Post;
 }

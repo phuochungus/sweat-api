@@ -149,4 +149,35 @@ export class UserFriendService {
       .where('id IN (:ids)', { ids: [currentUserId, friendId] })
       .execute();
   }
+
+  async getSuggesstions({ userId }) {
+    const suggestedUsers = await this.dataSource
+      .createQueryBuilder(UserFriend, 'uf1')
+      .innerJoin(UserFriend, 'uf2', 'uf1.userId2 = uf2.userId1')
+      .leftJoin(
+        UserFriend,
+        'existingFriend',
+        'existingFriend.userId1 = :userId AND existingFriend.userId2 = uf2.userId2',
+      )
+      .where('uf1.userId1 = :userId', { userId })
+      .andWhere('existingFriend.userId1 IS NULL') // Ensures they are not already friends
+      .select('uf2.userId2', 'suggestedUserId')
+      .addSelect('COUNT(uf1.userId2)', 'mutualFriendCount')
+      .groupBy('uf2.userId2')
+      .orderBy('mutualFriendCount', 'DESC')
+      .limit(5)
+      .getRawMany();
+
+    if (suggestedUsers.length == 0) {
+      // If no suggestions are found, return random users
+      return await this.dataSource
+        .createQueryBuilder(User, 'u')
+        .where('u.id != :userId', { userId })
+        .orderBy('RAND()')
+        .limit(5)
+        .getMany();
+    }
+
+    return suggestedUsers;
+  }
 }
