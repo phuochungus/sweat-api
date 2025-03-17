@@ -50,7 +50,7 @@ export class UserFriendRequestController {
   update(
     @Param('id') id: string,
     @Body() updateUserFriendRequestDto: UpdateUserFriendRequestDto,
-    @User() user,
+    @User('id') user,
   ) {
     return this.userFriendRequestService.update(
       +id,

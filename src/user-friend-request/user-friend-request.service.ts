@@ -77,7 +77,10 @@ export class UserFriendRequestService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} userFriendRequest`;
+    return this.dataSource
+      .createQueryBuilder(UserFriendRequest, 'ufr')
+      .where('ufr.id = :id', { id })
+      .getOne();
   }
 
   async update(
@@ -95,13 +98,9 @@ export class UserFriendRequestService {
       throw new NotFoundException('Friend request not found');
     }
 
-    if (
-      status != friendRequest.status &&
-      friendRequest.receiverUserId !== currentUserId &&
-      status != FriendRequestStatus.PENDING
-    ) {
+    if (friendRequest.receiverUserId !== currentUserId) {
       throw new ForbiddenException(
-        'You are not allowed to accept this request',
+        'You are not allowed to update this request',
       );
     }
 
