@@ -34,7 +34,7 @@ export class UserController {
   }
 
   @Get('/login')
-  async getUser(@User() user) {
+  async getUser(@User('uid') user) {
     return user;
   }
 }
