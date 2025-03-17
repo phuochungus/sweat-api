@@ -1,7 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ApiProperty } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNotEmpty } from 'class-validator';
 import { UserSetting } from 'src/entities';
 import { UpdateUserSettingDto } from 'src/user-setting/dto/update-user-setting.dto';
 import { Repository } from 'typeorm';
