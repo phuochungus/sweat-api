@@ -8,9 +8,11 @@ import { PageDto, PageMetaDto } from 'src/common/dto';
 export class UserFriendService {
   constructor(private readonly dataSource: DataSource) {}
 
-  async getFriends(filterFriendsDto: FilterFriendsDto, { currentUserId }) {
+  async getFriends(
+    filterFriendsDto: FilterFriendsDto,
+    { currentUserId, userId },
+  ) {
     const {
-      userId,
       page,
       take,
       query,

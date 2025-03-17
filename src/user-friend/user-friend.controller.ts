@@ -8,14 +8,6 @@ import { FilterFriendsDto } from 'src/user-friend/dto/filter-friend.dto';
 export class UserFriendController {
   constructor(private readonly userFriendService: UserFriendService) {}
 
-  @Get('/')
-  async getFriends(
-    @User('id') currentUserId: string,
-    @Query() q: FilterFriendsDto,
-  ) {
-    return this.userFriendService.getFriends(q, { currentUserId });
-  }
-
   @Get('/suggestions')
   async getFriendSuggestions(@User('id') currentUserId: string) {
     return this.userFriendService.getMutualFriends(2, 4);
