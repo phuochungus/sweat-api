@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { User, UserFriend } from 'src/entities';
+import { User, UserFriend, UserFriendRequest } from 'src/entities';
 import { DataSource } from 'typeorm';
 import { FilterFriendsDto } from 'src/user-friend/dto/filter-friend.dto';
 import { PageDto, PageMetaDto } from 'src/common/dto';
@@ -9,8 +9,14 @@ export class UserFriendService {
   constructor(private readonly dataSource: DataSource) {}
 
   async getFriends(filterFriendsDto: FilterFriendsDto, { currentUserId }) {
-    const { userId, page, take, query, withMutualFriendsCount } =
-      filterFriendsDto;
+    const {
+      userId,
+      page,
+      take,
+      query,
+      withMutualFriendsCount,
+      withCurrentUserPendingRequest,
+    } = filterFriendsDto;
 
     const queryBuilder = this.dataSource
       .createQueryBuilder(User, 'u')
@@ -45,6 +51,25 @@ export class UserFriendService {
           return {
             ...friend,
             mutualFriendsCount: mutualFriends.length,
+          };
+        }),
+      );
+    }
+
+    if (withCurrentUserPendingRequest && currentUserId) {
+      friends = await Promise.all(
+        friends.map(async (friend) => {
+          const pendingRequest = await this.dataSource
+            .createQueryBuilder(UserFriendRequest, 'ufr')
+            .where(
+              'uft.senderId = :friendId AND uft.receiverId = :currentUserId',
+              { currentUserId, friendId: friend.id },
+            )
+            .getOne();
+
+          return {
+            ...friend,
+            hasPendingRequest: !!pendingRequest,
           };
         }),
       );

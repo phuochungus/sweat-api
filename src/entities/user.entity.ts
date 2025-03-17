@@ -28,7 +28,7 @@ export class User extends BaseEntity {
   @ApiPropertyOptional()
   bio?: string;
 
-  @Column({ nullable: true, type: 'time without time zone' })
+  @Column({ nullable: true, type: 'date' })
   @ApiPropertyOptional()
   birthday?: Date;
 
