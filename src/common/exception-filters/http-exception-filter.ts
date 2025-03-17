@@ -24,6 +24,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
       );
     }
 
+    if (statusCode == 500) {
+      this.logger.error(exception);
+    }
+
     response.status(statusCode).json(responseBody);
   }
 }

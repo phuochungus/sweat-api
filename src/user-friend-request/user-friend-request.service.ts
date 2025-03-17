@@ -5,21 +5,37 @@ import {
 } from '@nestjs/common';
 import { CreateUserFriendRequestDto } from './dto/create-user-friend-request.dto';
 import { UpdateUserFriendRequestDto } from './dto/update-user-friend-request.dto';
-import { UserFriend, UserFriendRequest, UserNotification } from 'src/entities';
+import {
+  User,
+  UserFriend,
+  UserFriendRequest,
+  UserNotification,
+} from 'src/entities';
 import { DataSource } from 'typeorm';
 import { FriendRequestStatus, NotificationStatus } from 'src/common/enums';
 import { FilterFriendRequestDto } from 'src/user-friend-request/dto/filter-friend-request.dto';
 import { PageDto, PageMetaDto } from 'src/common/dto';
 import { SOCIAL } from 'src/user-notification/enum';
+import { UserFriendService } from 'src/user-friend/user-friend.service';
 
 @Injectable()
 export class UserFriendRequestService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    private readonly dataSource: DataSource,
+    private readonly userFriendService: UserFriendService,
+  ) {}
 
   async create(
     createUserFriendRequestDto: CreateUserFriendRequestDto,
     { currentUserId },
   ) {
+    const areFriends = await this.userFriendService.areFriends(
+      currentUserId,
+      createUserFriendRequestDto.receiverUserId,
+    );
+    if (areFriends) {
+      throw new ForbiddenException('Already friends');
+    }
     const queryBuilder = this.dataSource.createQueryBuilder(
       UserFriendRequest,
       'ufr',
@@ -40,8 +56,16 @@ export class UserFriendRequestService {
     FilterFriendRequestDto: FilterFriendRequestDto,
     { currentUserId },
   ) {
-    const { page, take, receiverUserId, senderUserId, status } =
-      FilterFriendRequestDto;
+    const {
+      page,
+      take,
+      receiverUserId,
+      senderUserId,
+      status,
+      withSender,
+      query,
+      withSenderMutualFriends,
+    } = FilterFriendRequestDto;
     const queryBuilder = this.dataSource.createQueryBuilder(
       UserFriendRequest,
       'ufr',
@@ -61,7 +85,17 @@ export class UserFriendRequestService {
       queryBuilder.andWhere('ufr.status = :status', { status });
     }
 
-    const [item, itemCount] = await Promise.all([
+    if (withSender) {
+      queryBuilder.leftJoinAndSelect('ufr.senderUser', 'sender');
+    }
+
+    if (query) {
+      queryBuilder.andWhere('sender.fullname LIKE :query', {
+        query: `%${query}%`,
+      });
+    }
+
+    let [item, itemCount] = await Promise.all([
       queryBuilder
         .skip((page - 1) * take)
         .take(take)
@@ -69,10 +103,23 @@ export class UserFriendRequestService {
       queryBuilder.getCount(),
     ]);
 
+    if (withSenderMutualFriends) {
+      item = await Promise.all(
+        item.map(async (request) => {
+          const mutualFriends = await this.userFriendService.getMutualFriends(
+            request.senderUserId,
+            request.receiverUserId,
+          );
+          return { ...request, mutualFriends };
+        }),
+      );
+    }
+
     const pageMetaDto = new PageMetaDto({
       itemCount,
       pageOptionsDto: { page, take },
     });
+
     return new PageDto(item, pageMetaDto);
   }
 
@@ -140,6 +187,17 @@ export class UserFriendRequestService {
             type: SOCIAL.ACCEPT_FRIEND_REQUEST,
           },
         ])
+        .execute();
+
+      await this.dataSource
+        .createQueryBuilder(User, 'u')
+        .update()
+        .set({
+          friendCount: () => 'friendCount + 1',
+        })
+        .where('id IN (:ids)', {
+          ids: [friendRequest.senderUserId, friendRequest.receiverUserId],
+        })
         .execute();
     }
     if (status === FriendRequestStatus.REJECTED) {

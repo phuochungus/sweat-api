@@ -8,6 +8,6 @@ export class FilterFriendsDto extends GenericFilter {
   @ApiPropertyOptional({ description: 'Search query' })
   query?: string;
 
-  @ApiPropertyOptional()
-  withCommonFriendsCount?: boolean;
+  @ApiPropertyOptional({ description: 'Include mutual friends count' })
+  withMutualFriendsCount?: boolean;
 }

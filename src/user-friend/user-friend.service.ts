@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { User, UserFriend } from 'src/entities';
 import { DataSource } from 'typeorm';
 import { FilterFriendsDto } from 'src/user-friend/dto/filter-friend.dto';
@@ -9,7 +9,7 @@ export class UserFriendService {
   constructor(private readonly dataSource: DataSource) {}
 
   async getFriends(filterFriendsDto: FilterFriendsDto, { currentUserId }) {
-    const { userId, page, take, query, withCommonFriendsCount } =
+    const { userId, page, take, query, withMutualFriendsCount } =
       filterFriendsDto;
 
     const queryBuilder = this.dataSource
@@ -17,55 +17,136 @@ export class UserFriendService {
       .innerJoin(
         UserFriend,
         'uf',
-        `u.id = CASE WHEN uf.user_id1 = :userId THEN uf.user_id2 ELSE uf.user_id1 END`,
+        `u.id = CASE WHEN uf.userId1 = :userId THEN uf.userId2 ELSE uf.userId1 END`,
       )
-      .where('uf.user_id1 = :userId OR uf.user_id2 = :userId', { userId });
+      .where('uf.userId1 = :userId OR uf.userId2 = :userId', { userId });
 
     if (query) {
-      queryBuilder.andWhere('u.username LIKE :query', { query: `%${query}%` });
+      queryBuilder.andWhere('u.fullname LIKE :query', { query: `%${query}%` });
     }
 
-    // Add the common friends count calculation
-    // This subquery counts mutual friends between the current user and each friend
-    queryBuilder.addSelect((subQuery) => {
-      return subQuery
-        .select('COUNT(*)')
-        .from(UserFriend, 'uf1')
-        .innerJoin(
-          UserFriend,
-          'uf2',
-          '(uf1.user_id1 = uf2.user_id1 OR uf1.user_id1 = uf2.user_id2 OR uf1.user_id2 = uf2.user_id1 OR uf1.user_id2 = uf2.user_id2) AND uf1.id != uf2.id',
-        )
-        .where(
-          '(uf1.user_id1 = :userId OR uf1.user_id2 = :userId) AND (uf2.user_id1 = u.id OR uf2.user_id2 = u.id)',
-          { userId },
-        );
-    }, 'commonFriends');
+    // Add pagination
+    const skip = (page - 1) * take;
+    queryBuilder.skip(skip).take(take);
 
-    // Fetch friends list
-    const [friends, totalFriendsCount] = await Promise.all([
-      queryBuilder
-        .take(take)
-        .skip((page - 1) * take)
-        .getRawMany(),
-      this.dataSource
-        .createQueryBuilder(UserFriend, 'uf')
-        .where('uf.user_id1 = :userId OR uf.user_id2 = :userId', { userId })
-        .getCount(),
-    ]);
+    queryBuilder.orderBy('u.fullname', 'ASC');
 
-    // Transform the raw results to include commonFriends as a numeric value
-    const transformedFriends = friends.map((friend) => ({
-      ...friend,
-      commonFriends: parseInt(friend.commonFriends) || 0,
-    }));
+    const totalFriendsCount = await queryBuilder.getCount();
 
-    // Create paginated response
+    let friends = await queryBuilder.getMany();
+
+    if (withMutualFriendsCount && currentUserId) {
+      friends = await Promise.all(
+        friends.map(async (friend) => {
+          const mutualFriends = await this.getMutualFriends(
+            currentUserId,
+            friend.id,
+          );
+          return {
+            ...friend,
+            mutualFriendsCount: mutualFriends.length,
+          };
+        }),
+      );
+    }
+
     const pageMetaDto = new PageMetaDto({
       itemCount: totalFriendsCount,
       pageOptionsDto: { page, take },
     });
 
-    return new PageDto(transformedFriends, pageMetaDto);
+    return new PageDto(friends, pageMetaDto);
+  }
+
+  async areFriends(userId1: number, userId2: number) {
+    const friend = await this.dataSource
+      .createQueryBuilder(UserFriend, 'uf')
+      .where(
+        '(uf.userId1 = :userId1 AND uf.userId2 = :userId2) OR (uf.userId1 = :userId2 AND uf.userId2 = :userId1)',
+        { userId1, userId2 },
+      )
+      .getOne();
+
+    return !!friend;
+  }
+
+  async getMutualFriends(userId1: number, userId2: number): Promise<User[]> {
+    const user1Friends = await this.dataSource
+      .createQueryBuilder(User, 'u')
+      .innerJoin(
+        UserFriend,
+        'uf',
+        `u.id = CASE WHEN uf.userId1 = :userId THEN uf.userId2 ELSE uf.userId1 END`,
+      )
+      .where('uf.userId1 = :userId OR uf.userId2 = :userId', {
+        userId: userId1,
+      })
+      .getMany();
+
+    const user2Friends = await this.dataSource
+      .createQueryBuilder(User, 'u')
+      .innerJoin(
+        UserFriend,
+        'uf',
+        `u.id = CASE WHEN uf.userId1 = :userId THEN uf.userId2 ELSE uf.userId1 END`,
+      )
+      .where('uf.userId1 = :userId OR uf.userId2 = :userId', {
+        userId: userId2,
+      })
+      .getMany();
+
+    const user1FriendIds = user1Friends.map((friend) => friend.id);
+    return user2Friends.filter((friend) => user1FriendIds.includes(friend.id));
+  }
+
+  async syncFriendCountForAllUser() {
+    const users = await this.dataSource.createQueryBuilder(User, 'u').getMany();
+
+    await Promise.all(
+      users.map(async (user) => {
+        const friendsCount = await this.dataSource
+          .createQueryBuilder(UserFriend, 'uf')
+          .where('uf.userId1 = :userId OR uf.userId2 = :userId', {
+            userId: user.id,
+          })
+          .getCount();
+
+        await this.dataSource
+          .createQueryBuilder(User, 'u')
+          .update()
+          .set({ friendCount: friendsCount })
+          .where('id = :id', { id: user.id })
+          .execute();
+      }),
+    );
+  }
+
+  async unfriend(friendId: number, { currentUserId }) {
+    const friend = await this.dataSource
+      .createQueryBuilder(UserFriend, 'uf')
+      .where(
+        '(uf.userId1 = :currentUserId AND uf.userId2 = :friendId) OR (uf.userId1 = :friendId AND uf.userId2 = :currentUserId)',
+        { currentUserId, friendId },
+      )
+      .getOne();
+
+    if (!friend) {
+      throw new NotFoundException('Friend not found');
+    }
+
+    await this.dataSource
+      .createQueryBuilder(UserFriend, 'uf')
+      .delete()
+      .where('id = :id', { id: friend.id })
+      .execute();
+
+    await this.dataSource
+      .createQueryBuilder(User, 'u')
+      .update()
+      .set({
+        friendCount: () => 'friendCount - 1',
+      })
+      .where('id IN (:ids)', { ids: [currentUserId, friendId] })
+      .execute();
   }
 }

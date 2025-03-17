@@ -11,4 +11,13 @@ export class FilterFriendRequestDto extends GenericFilter {
 
   @ApiPropertyOptional({ enum: FriendRequestStatus })
   status?: FriendRequestStatus;
+
+  @ApiPropertyOptional()
+  query?: string;
+
+  @ApiPropertyOptional({ description: 'Include sender details' })
+  withSender?: boolean;
+
+  @ApiPropertyOptional({ description: 'Include sender mutual friends' })
+  withSenderMutualFriends?: boolean;
 }
