@@ -12,7 +12,6 @@ export class UserFriendService {
     const { userId, page, take, query, withCommonFriendsCount } =
       filterFriendsDto;
 
-    // Start QueryBuilder for fetching friends
     const queryBuilder = this.dataSource
       .createQueryBuilder(User, 'u')
       .innerJoin(

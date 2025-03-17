@@ -6,11 +6,13 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { UserFriendRequestService } from './user-friend-request.service';
 import { CreateUserFriendRequestDto } from './dto/create-user-friend-request.dto';
 import { UpdateUserFriendRequestDto } from './dto/update-user-friend-request.dto';
 import { Auth, User } from 'src/common/decorators';
+import { FilterFriendRequestDto } from 'src/user-friend-request/dto/filter-friend-request.dto';
 
 @Auth()
 @Controller('user-friend-request')
@@ -30,8 +32,13 @@ export class UserFriendRequestController {
   }
 
   @Get()
-  findAll() {
-    return this.userFriendRequestService.findAll();
+  findAll(
+    @Query() filterRequestDto: FilterFriendRequestDto,
+    @User('id') userId,
+  ) {
+    return this.userFriendRequestService.findAll(filterRequestDto, {
+      currentUserId: userId,
+    });
   }
 
   @Get(':id')

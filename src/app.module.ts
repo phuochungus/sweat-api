@@ -13,6 +13,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { TaskScheduleService } from './task-schedule/task-schedule.service';
 import { UserSettingModule } from './user-setting/user-setting.module';
 import { UserFriendRequestModule } from './user-friend-request/user-friend-request.module';
+import { UserNotificationModule } from './user-notification/user-notification.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { UserFriendRequestModule } from './user-friend-request/user-friend-reque
     UserFriendModule,
     UserSettingModule,
     UserFriendRequestModule,
+    UserNotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService, TaskScheduleService],

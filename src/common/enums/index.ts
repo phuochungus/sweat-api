@@ -24,8 +24,8 @@ export enum FriendRequestStatus {
   REJECTED = 'REJECTED',
 }
 export enum NotificationStatus {
-  SEEN = 'SEEN',
-  UNSEEN = 'UNSEEN',
+  READ = 'READ',
+  UNREAD = 'UNREAD',
 }
 export enum MIME_TYPE {
   IMAGES = 'images',
@@ -36,13 +36,6 @@ export enum MIME_TYPE {
 export enum TYPE_UPLOAD {
   IMAGE = 1,
   VIDEO = 2,
-}
-export enum NOTIFICATION_TYPE {
-  LIKE = 'LIKE',
-  COMMENT = 'COMMENT',
-  REACT = 'REACT',
-  FRIEND_REQUEST = 'FRIEND_REQUEST',
-  ACCEPT_FRIEND_REQUEST = 'ACCEPT_FRIEND_REQUEST',
 }
 
 export * from './country';
