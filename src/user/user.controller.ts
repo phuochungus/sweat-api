@@ -12,11 +12,10 @@ import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtGuard } from 'src/common/guards';
 import { Auth, User } from 'src/common/decorators';
-import { UserFriendService } from 'src/user-friend/user-friend.service';
-import { FilterFriendRequestDto } from 'src/user-friend-request/dto/filter-friend-request.dto';
-import { FilterFriendsDto } from 'src/user-friend/dto/filter-friend.dto';
+import { FilterFriendsDto } from 'src/friend/dto/filter-friend.dto';
 import { UserNotification } from 'src/entities';
-import { UserNotificationService } from 'src/user-notification/user-notification.service';
+import { FriendService } from 'src/friend/friend.service';
+import { NotificationService } from 'src/notification/user-notification.service';
 
 @Auth()
 @UseGuards(JwtGuard)
@@ -24,8 +23,8 @@ import { UserNotificationService } from 'src/user-notification/user-notification
 export class UserController {
   constructor(
     private readonly userService: UserService,
-    private readonly userFriendService: UserFriendService,
-    private readonly userNotificationService: UserNotificationService,
+    private readonly friendService: FriendService,
+    private readonly userNotificationService: NotificationService,
   ) {}
 
   @Patch('/')
@@ -53,7 +52,7 @@ export class UserController {
     @Param('id') userId: string,
     @Query() filterDto: FilterFriendsDto,
   ) {
-    return this.userFriendService.getFriends(filterDto, {
+    return this.friendService.getFriends(filterDto, {
       currentUserId,
       userId,
     });

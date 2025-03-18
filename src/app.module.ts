@@ -8,12 +8,13 @@ import { AwsModule } from 'src/aws/aws.module';
 import { PostModule } from './post/post.module';
 import { PostMediaModule } from './post-media/post-media.module';
 import { UserModule } from './user/user.module';
-import { UserFriendModule } from './user-friend/user-friend.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TaskScheduleService } from './task-schedule/task-schedule.service';
 import { UserSettingModule } from './user-setting/user-setting.module';
-import { UserFriendRequestModule } from './user-friend-request/user-friend-request.module';
-import { UserNotificationModule } from './user-notification/user-notification.module';
+
+import { FriendModule } from './friend/friend.module';
+import { FriendRequestModule } from 'src/friend-request/user-friend-request.module';
+import { NotificationModule } from 'src/notification/user-notification.module';
 
 @Module({
   imports: [
@@ -37,10 +38,10 @@ import { UserNotificationModule } from './user-notification/user-notification.mo
     PostModule,
     PostMediaModule,
     UserModule,
-    UserFriendModule,
     UserSettingModule,
-    UserFriendRequestModule,
-    UserNotificationModule,
+    FriendRequestModule,
+    NotificationModule,
+    FriendModule,
   ],
   controllers: [AppController],
   providers: [AppService, TaskScheduleService],

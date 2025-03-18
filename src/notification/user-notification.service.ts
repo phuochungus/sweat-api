@@ -2,11 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { PageDto, PageMetaDto } from 'src/common/dto';
 import { GenericFilter } from 'src/common/generic/paginate';
 import { UserNotification } from 'src/entities';
-import { UpdateUserNotificationDto } from 'src/user-notification/dto/update-user-notification.dto';
+import { UpdateUserNotificationDto } from 'src/notification/dto/update-user-notification.dto';
 import { DataSource } from 'typeorm';
 
 @Injectable()
-export class UserNotificationService {
+export class NotificationService {
   constructor(private readonly dataSource: DataSource) {}
 
   async getAll(filterDto: GenericFilter, { userId }) {

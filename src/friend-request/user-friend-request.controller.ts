@@ -8,17 +8,17 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
-import { UserFriendRequestService } from './user-friend-request.service';
+import { FriendRequestService } from './user-friend-request.service';
 import { CreateUserFriendRequestDto } from './dto/create-user-friend-request.dto';
 import { UpdateUserFriendRequestDto } from './dto/update-user-friend-request.dto';
 import { Auth, User } from 'src/common/decorators';
-import { FilterFriendRequestDto } from 'src/user-friend-request/dto/filter-friend-request.dto';
+import { FilterFriendRequestDto } from 'src/friend-request/dto/filter-friend-request.dto';
 
 @Auth()
 @Controller('user-friend-request')
-export class UserFriendRequestController {
+export class FriendRequestController {
   constructor(
-    private readonly userFriendRequestService: UserFriendRequestService,
+    private readonly userFriendRequestService: FriendRequestService,
   ) {}
 
   @Post()

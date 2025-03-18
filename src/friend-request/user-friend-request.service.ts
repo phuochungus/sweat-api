@@ -13,17 +13,17 @@ import {
 } from 'src/entities';
 import { DataSource } from 'typeorm';
 import { FriendRequestStatus, NotificationStatus } from 'src/common/enums';
-import { FilterFriendRequestDto } from 'src/user-friend-request/dto/filter-friend-request.dto';
 import { PageDto, PageMetaDto } from 'src/common/dto';
-import { SOCIAL } from 'src/user-notification/enum';
-import { UserFriendService } from 'src/user-friend/user-friend.service';
-import { TEMPLATE } from 'src/user-notification/template';
+import { FriendService } from 'src/friend/friend.service';
+import { TEMPLATE } from 'src/notification/template';
+import { SOCIAL } from 'src/notification/enum';
+import { FilterFriendRequestDto } from 'src/friend-request/dto/filter-friend-request.dto';
 
 @Injectable()
-export class UserFriendRequestService {
+export class FriendRequestService {
   constructor(
     private readonly dataSource: DataSource,
-    private readonly userFriendService: UserFriendService,
+    private readonly friendService: FriendService,
   ) {}
 
   async create(
@@ -35,7 +35,7 @@ export class UserFriendRequestService {
       .where('u.id = :id', { id: currentUserId })
       .getOne();
 
-    const areFriends = await this.userFriendService.areFriends(
+    const areFriends = await this.friendService.areFriends(
       currentUserId,
       createUserFriendRequestDto.receiverUserId,
     );
@@ -129,7 +129,7 @@ export class UserFriendRequestService {
     if (withSenderMutualFriends) {
       item = await Promise.all(
         item.map(async (request) => {
-          const mutualFriends = await this.userFriendService.getMutualFriends(
+          const mutualFriends = await this.friendService.getMutualFriends(
             request.senderUserId,
             request.receiverUserId,
           );

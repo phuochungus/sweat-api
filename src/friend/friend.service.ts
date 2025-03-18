@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { User, UserFriend, UserFriendRequest } from 'src/entities';
-import { DataSource } from 'typeorm';
-import { FilterFriendsDto } from 'src/user-friend/dto/filter-friend.dto';
 import { PageDto, PageMetaDto } from 'src/common/dto';
+import { User, UserFriend, UserFriendRequest } from 'src/entities';
+import { FilterFriendsDto } from 'src/friend/dto/filter-friend.dto';
+import { DataSource } from 'typeorm';
 
 @Injectable()
-export class UserFriendService {
+export class FriendService {
   constructor(private readonly dataSource: DataSource) {}
 
   async getFriends(

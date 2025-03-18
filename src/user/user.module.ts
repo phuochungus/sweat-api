@@ -3,15 +3,11 @@ import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
-import { UserFriendModule } from 'src/user-friend/user-friend.module';
-import { UserNotificationModule } from 'src/user-notification/user-notification.module';
+import { FriendModule } from 'src/friend/friend.module';
+import { NotificationModule } from 'src/notification/user-notification.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([User]),
-    UserFriendModule,
-    UserNotificationModule,
-  ],
+  imports: [TypeOrmModule.forFeature([User]), FriendModule, NotificationModule],
   controllers: [UserController],
   providers: [UserService],
 })
