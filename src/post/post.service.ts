@@ -12,7 +12,8 @@ import { UserFriend } from 'src/entities';
 export class PostService {
   constructor(
     @InjectRepository(Post) private readonly postRepository: Repository<Post>,
-    @InjectRepository(UserFriend) private readonly friendRepository: Repository<UserFriend>,
+    @InjectRepository(UserFriend)
+    private readonly friendRepository: Repository<UserFriend>,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -57,24 +58,22 @@ export class PostService {
 
   async getFeed(userId: number, filterPostDto: FilterPostsDto) {
     const { page, take } = filterPostDto;
-    
+
     // Get all friends of the user
     const friends = await this.friendRepository.find({
-      where: [
-        { userId1: userId },
-        { userId2: userId }
-      ]
+      where: [{ userId1: userId }, { userId2: userId }],
     });
 
     // Extract friend IDs
-    const friendIds = friends.map(friend => 
-      friend.userId1 === userId ? friend.userId2 : friend.userId1
+    const friendIds = friends.map((friend) =>
+      friend.userId1 === userId ? friend.userId2 : friend.userId1,
     );
 
     // Add the user's own ID to the list
     friendIds.push(userId);
 
-    const queryBuilder = this.dataSource.createQueryBuilder(Post, 'post')
+    const queryBuilder = this.dataSource
+      .createQueryBuilder(Post, 'post')
       .leftJoinAndSelect('post.user', 'user')
       .where('post.userId IN (:...userIds)', { userIds: friendIds })
       .orderBy('post.createdAt', 'DESC');
