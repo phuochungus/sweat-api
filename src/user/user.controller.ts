@@ -7,6 +7,7 @@ import {
   Get,
   Param,
   Query,
+  Delete,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -53,6 +54,17 @@ export class UserController {
     @Query() filterDto: FilterFriendsDto,
   ) {
     return this.friendService.getFriends(filterDto, {
+      currentUserId,
+      userId,
+    });
+  }
+
+  @Delete('/:id/friend')
+  async unfriend(
+    @User('id') currentUserId: string,
+    @Param('id') userId: string,
+  ) {
+    return this.friendService.unfriend({
       currentUserId,
       userId,
     });

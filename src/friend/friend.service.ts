@@ -148,12 +148,12 @@ export class FriendService {
     );
   }
 
-  async unfriend(friendId: number, { currentUserId }) {
+  async unfriend({ currentUserId, userId }) {
     const friend = await this.dataSource
       .createQueryBuilder(UserFriend, 'uf')
       .where(
         '(uf.userId1 = :currentUserId AND uf.userId2 = :friendId) OR (uf.userId1 = :friendId AND uf.userId2 = :currentUserId)',
-        { currentUserId, friendId },
+        { currentUserId, friendId: userId },
       )
       .getOne();
 
@@ -173,7 +173,7 @@ export class FriendService {
       .set({
         friendCount: () => 'friendCount - 1',
       })
-      .where('id IN (:ids)', { ids: [currentUserId, friendId] })
+      .where('id IN (:ids)', { ids: [currentUserId, userId] })
       .execute();
   }
 
