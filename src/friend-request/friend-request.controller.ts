@@ -8,14 +8,14 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
-import { FriendRequestService } from './user-friend-request.service';
-import { CreateUserFriendRequestDto } from './dto/create-user-friend-request.dto';
-import { UpdateUserFriendRequestDto } from './dto/update-user-friend-request.dto';
+import { FriendRequestService } from './friend-request.service';
+import { CreateFriendRequestDto } from './dto/create-friend-request.dto';
+import { UpdateFriendRequestDto } from './dto/update-friend-request.dto';
 import { Auth, User } from 'src/common/decorators';
 import { FilterFriendRequestDto } from 'src/friend-request/dto/filter-friend-request.dto';
 
 @Auth()
-@Controller('user-friend-request')
+@Controller('friend-request')
 export class FriendRequestController {
   constructor(
     private readonly userFriendRequestService: FriendRequestService,
@@ -23,7 +23,7 @@ export class FriendRequestController {
 
   @Post()
   create(
-    @Body() createUserFriendRequestDto: CreateUserFriendRequestDto,
+    @Body() createUserFriendRequestDto: CreateFriendRequestDto,
     @User('id') user,
   ) {
     return this.userFriendRequestService.create(createUserFriendRequestDto, {
@@ -49,7 +49,7 @@ export class FriendRequestController {
   @Patch(':id')
   update(
     @Param('id') id: string,
-    @Body() updateUserFriendRequestDto: UpdateUserFriendRequestDto,
+    @Body() updateUserFriendRequestDto: UpdateFriendRequestDto,
     @User('id') user,
   ) {
     return this.userFriendRequestService.update(

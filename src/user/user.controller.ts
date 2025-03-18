@@ -13,9 +13,9 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtGuard } from 'src/common/guards';
 import { Auth, User } from 'src/common/decorators';
 import { FilterFriendsDto } from 'src/friend/dto/filter-friend.dto';
-import { UserNotification } from 'src/entities';
 import { FriendService } from 'src/friend/friend.service';
 import { NotificationService } from 'src/notification/notification.service';
+import { GenericFilter } from 'src/common/generic/paginate';
 
 @Auth()
 @UseGuards(JwtGuard)
@@ -24,12 +24,12 @@ export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly friendService: FriendService,
-    private readonly userNotificationService: NotificationService,
+    private readonly notificationService: NotificationService,
   ) {}
 
-  @Patch('/')
+  @Patch('/:id')
   async updateUser(
-    @User('id') id: string,
+    @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
     if (!id) {
@@ -46,7 +46,7 @@ export class UserController {
     return user;
   }
 
-  @Get('/:id/friends')
+  @Get('/:id/friend')
   async getFriends(
     @User('id') currentUserId: string,
     @Param('id') userId: string,
@@ -58,11 +58,16 @@ export class UserController {
     });
   }
 
-  // @Get('/:id/notification')
-  // async getNotifications(
-  //   @User('id') currentUserId: string,
-  //   @Param('id') userId: string,
-  // ) {
-  //   return this.userNotificationService.batchUpdate
-  // }
+  @Get('/:id/friend-suggestion')
+  async getFriendSuggestions(@Param('id') currentUserId: string) {
+    return this.friendService.getSuggestions({ userId: currentUserId });
+  }
+
+  @Get('/:id/notification')
+  async getNotifications(
+    @Param('id') userId: string,
+    @Query() filterNotiDto: GenericFilter,
+  ) {
+    return this.notificationService.getAll(filterNotiDto, { userId });
+  }
 }

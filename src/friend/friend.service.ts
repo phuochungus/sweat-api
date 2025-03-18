@@ -177,34 +177,55 @@ export class FriendService {
       .execute();
   }
 
-  async getSuggesstions({ userId }) {
-    const suggestedUsers = await this.dataSource
+  async getSuggestions({ userId, limit = 5 }) {
+    const suggestedUserIds = await this.dataSource
       .createQueryBuilder(UserFriend, 'uf1')
       .innerJoin(UserFriend, 'uf2', 'uf1.userId2 = uf2.userId1')
       .leftJoin(
         UserFriend,
         'existingFriend',
         'existingFriend.userId1 = :userId AND existingFriend.userId2 = uf2.userId2',
+        { userId },
       )
       .where('uf1.userId1 = :userId', { userId })
       .andWhere('existingFriend.userId1 IS NULL') // Ensures they are not already friends
       .select('uf2.userId2', 'suggestedUserId')
       .addSelect('COUNT(uf1.userId2)', 'mutualFriendCount')
       .groupBy('uf2.userId2')
-      .orderBy('mutualFriendCount', 'DESC')
+      .orderBy('"mutualFriendCount"', 'DESC') // ✅ Fix: Use double quotes
       .limit(5)
       .getRawMany();
 
-    if (suggestedUsers.length == 0) {
-      // If no suggestions are found, return random users
-      return await this.dataSource
+    let users = await this.dataSource
+      .createQueryBuilder(User, 'u')
+      .where('u.id IN (:...ids)', {
+        ids: suggestedUserIds.map((s) => s.suggestedUserId),
+      })
+      .getMany();
+
+    users = await Promise.all(
+      users.map(async (user) => {
+        const suggestedUser = suggestedUserIds.find(
+          (s) => s.suggestedUserId === user.id,
+        );
+        return {
+          ...user,
+          mutualFriendCount: +suggestedUser.mutualFriendCount,
+          mutualFriends: await this.getMutualFriends(userId, user.id),
+        };
+      }),
+    );
+
+    if (users.length < limit) {
+      const randomUsers = await this.dataSource
         .createQueryBuilder(User, 'u')
         .where('u.id != :userId', { userId })
-        .orderBy('RAND()')
-        .limit(5)
+        .orderBy('RANDOM()') // ✅ Fix: Use "RANDOM()" for PostgreSQL (instead of "RAND()")
+        .limit(limit - users.length)
         .getMany();
-    }
 
-    return suggestedUsers;
+      users.push(...randomUsers);
+    }
+    return users;
   }
 }

@@ -13,7 +13,7 @@ import { TaskScheduleService } from './task-schedule/task-schedule.service';
 import { UserSettingModule } from './user-setting/user-setting.module';
 
 import { FriendModule } from './friend/friend.module';
-import { FriendRequestModule } from 'src/friend-request/user-friend-request.module';
+import { FriendRequestModule } from 'src/friend-request/friend-request.module';
 import { NotificationModule } from 'src/notification/notification.module';
 
 @Module({

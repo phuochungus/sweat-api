@@ -3,8 +3,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateUserFriendRequestDto } from './dto/create-user-friend-request.dto';
-import { UpdateUserFriendRequestDto } from './dto/update-user-friend-request.dto';
+import { CreateFriendRequestDto } from './dto/create-friend-request.dto';
+import { UpdateFriendRequestDto } from './dto/update-friend-request.dto';
 import {
   User,
   UserFriend,
@@ -27,7 +27,7 @@ export class FriendRequestService {
   ) {}
 
   async create(
-    createUserFriendRequestDto: CreateUserFriendRequestDto,
+    createUserFriendRequestDto: CreateFriendRequestDto,
     { currentUserId },
   ) {
     const currentUser = await this.dataSource
@@ -155,7 +155,7 @@ export class FriendRequestService {
 
   async update(
     friendRequestId: number,
-    updateUserFriendRequestDto: UpdateUserFriendRequestDto,
+    updateUserFriendRequestDto: UpdateFriendRequestDto,
     { currentUserId },
   ) {
     const { status } = updateUserFriendRequestDto;

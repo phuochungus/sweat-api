@@ -6,14 +6,14 @@ import { UpdateNotificationDto } from 'src/notification/dto/update-notification.
 @Auth()
 @Controller('user-notification')
 export class NotificationController {
-  constructor(private readonly userNotificationService: NotificationService) {}
+  constructor(private readonly notificationService: NotificationService) {}
 
   @Patch('/')
   async batchUpdate(
     @User('id') currentUserId: string,
     @Body() updateDto: UpdateNotificationDto,
   ) {
-    return this.userNotificationService.batchUpdate(updateDto, {
+    return this.notificationService.batchUpdate(updateDto, {
       currentUserId,
     });
   }

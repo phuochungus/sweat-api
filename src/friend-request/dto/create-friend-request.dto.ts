@@ -1,6 +1,6 @@
 import { PickType } from '@nestjs/swagger';
 import { UserFriendRequest } from 'src/entities';
 
-export class CreateUserFriendRequestDto extends PickType(UserFriendRequest, [
+export class CreateFriendRequestDto extends PickType(UserFriendRequest, [
   'receiverUserId',
 ] as const) {}
