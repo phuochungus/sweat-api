@@ -41,4 +41,7 @@ export class User extends BaseEntity {
 
   @Column({ nullable: false, default: 0 })
   friendCount!: number;
+
+  @Column('simple-array', { nullable: true })
+  deviceTokens?: string[];
 }
