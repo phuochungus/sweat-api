@@ -1,7 +1,7 @@
 import { Body, Controller, Patch } from '@nestjs/common';
-import { NotificationService } from './user-notification.service';
+import { NotificationService } from './notification.service';
 import { Auth, User } from 'src/common/decorators';
-import { UpdateUserNotificationDto } from 'src/notification/dto/update-user-notification.dto';
+import { UpdateNotificationDto } from 'src/notification/dto/update-notification.dto';
 
 @Auth()
 @Controller('user-notification')
@@ -11,7 +11,7 @@ export class NotificationController {
   @Patch('/')
   async batchUpdate(
     @User('id') currentUserId: string,
-    @Body() updateDto: UpdateUserNotificationDto,
+    @Body() updateDto: UpdateNotificationDto,
   ) {
     return this.userNotificationService.batchUpdate(updateDto, {
       currentUserId,

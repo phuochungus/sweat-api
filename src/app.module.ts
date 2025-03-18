@@ -14,7 +14,7 @@ import { UserSettingModule } from './user-setting/user-setting.module';
 
 import { FriendModule } from './friend/friend.module';
 import { FriendRequestModule } from 'src/friend-request/user-friend-request.module';
-import { NotificationModule } from 'src/notification/user-notification.module';
+import { NotificationModule } from 'src/notification/notification.module';
 
 @Module({
   imports: [

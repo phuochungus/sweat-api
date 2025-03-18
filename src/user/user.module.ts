@@ -4,7 +4,7 @@ import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
 import { FriendModule } from 'src/friend/friend.module';
-import { NotificationModule } from 'src/notification/user-notification.module';
+import { NotificationModule } from 'src/notification/notification.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User]), FriendModule, NotificationModule],

@@ -15,7 +15,7 @@ import { Auth, User } from 'src/common/decorators';
 import { FilterFriendsDto } from 'src/friend/dto/filter-friend.dto';
 import { UserNotification } from 'src/entities';
 import { FriendService } from 'src/friend/friend.service';
-import { NotificationService } from 'src/notification/user-notification.service';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Auth()
 @UseGuards(JwtGuard)

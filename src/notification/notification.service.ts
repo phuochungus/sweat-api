@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PageDto, PageMetaDto } from 'src/common/dto';
 import { GenericFilter } from 'src/common/generic/paginate';
 import { UserNotification } from 'src/entities';
-import { UpdateUserNotificationDto } from 'src/notification/dto/update-user-notification.dto';
+import { UpdateNotificationDto } from 'src/notification/dto/update-notification.dto';
 import { DataSource } from 'typeorm';
 
 @Injectable()
@@ -34,7 +34,7 @@ export class NotificationService {
     return new PageDto(item, pageDto);
   }
 
-  async batchUpdate(updateDto: UpdateUserNotificationDto, { currentUserId }) {
+  async batchUpdate(updateDto: UpdateNotificationDto, { currentUserId }) {
     return await this.dataSource
       .createQueryBuilder(UserNotification, 'un')
       .update(UserNotification)
