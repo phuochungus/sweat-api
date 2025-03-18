@@ -45,4 +45,10 @@ export class PostController {
   remove(@Param('id') id: string) {
     return this.postService.remove(+id);
   }
+
+  @Get('feed')
+  @ApiResponse({ type: PageDto })
+  async getFeed(@User('id') userId: number, @Query() q: FilterPostsDto) {
+    return this.postService.getFeed(userId, q);
+  }
 }
