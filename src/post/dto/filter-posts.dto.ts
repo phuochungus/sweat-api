@@ -6,5 +6,5 @@ export class FilterPostsDto extends GenericFilter {
   createdBy?: string;
 
   @ApiProperty({ description: 'isReacted' })
-  includes?: string
+  includes?: string;
 }
