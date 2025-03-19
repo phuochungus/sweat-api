@@ -30,14 +30,23 @@ export class FriendRequestService {
     createUserFriendRequestDto: CreateFriendRequestDto,
     { currentUserId },
   ) {
-    const currentUser = await this.dataSource
+    const { receiverUserId, senderUserId } = createUserFriendRequestDto;
+    if (receiverUserId === senderUserId) {
+      throw new ForbiddenException(
+        'You cannot send friend request to yourself',
+      );
+    }
+    if (currentUserId !== senderUserId) {
+      throw new ForbiddenException('You are not allowed to send this request');
+    }
+    const senderUser = await this.dataSource
       .createQueryBuilder(User, 'u')
-      .where('u.id = :id', { id: currentUserId })
+      .where('u.id = :id', { id: senderUserId })
       .getOne();
 
     const areFriends = await this.friendService.areFriends(
-      currentUserId,
-      createUserFriendRequestDto.receiverUserId,
+      senderUserId,
+      receiverUserId,
     );
     if (areFriends) {
       throw new ForbiddenException('Already friends');
@@ -49,8 +58,8 @@ export class FriendRequestService {
     queryBuilder
       .insert()
       .values({
-        senderUserId: currentUserId,
-        receiverUserId: createUserFriendRequestDto.receiverUserId,
+        senderUserId,
+        receiverUserId,
         status: FriendRequestStatus.PENDING,
       })
       .execute();
@@ -62,11 +71,11 @@ export class FriendRequestService {
       .insert()
       .values([
         {
-          receiverUserId: createUserFriendRequestDto.receiverUserId,
-          senderUserId: currentUserId,
+          receiverUserId,
+          senderUserId,
           text: TEMPLATE.CREATE_FRIEND_REQUEST.replace(
             '<name>',
-            currentUser.fullname,
+            senderUser.fullname,
           ),
           status: NotificationStatus.UNREAD,
           type: SOCIAL.CREATE_FRIEND_REQUEST,

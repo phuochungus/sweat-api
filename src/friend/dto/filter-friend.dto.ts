@@ -5,11 +5,10 @@ export class FilterFriendsDto extends GenericFilter {
   @ApiPropertyOptional({ description: 'Search query' })
   query?: string;
 
-  @ApiPropertyOptional({ description: 'Include mutual friends count' })
-  withMutualFriendsCount?: boolean;
-
   @ApiPropertyOptional({
-    description: 'Include pending request to current user',
+    description: ['pendingRequest', 'mutualFriendsCount']
+      .map((field) => field)
+      .join(', '),
   })
-  withCurrentUserPendingRequest?: boolean;
+  includes?: string;
 }

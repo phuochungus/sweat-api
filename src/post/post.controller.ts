@@ -12,14 +12,13 @@ import {
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { DataSource } from 'typeorm';
 import { ApiResponse } from '@nestjs/swagger';
 import { PageDto } from 'src/common/dto';
 import { Auth, User } from 'src/common/decorators';
 import { FilterPostsDto } from 'src/post/dto/filter-posts.dto';
 import { JwtGuard } from 'src/common/guards';
 
-@Controller('post')
+@Controller('posts')
 @Auth()
 @UseGuards(JwtGuard)
 export class PostController {

@@ -12,13 +12,7 @@ export class FriendService {
     filterFriendsDto: FilterFriendsDto,
     { currentUserId, userId },
   ) {
-    const {
-      page,
-      take,
-      query,
-      withMutualFriendsCount,
-      withCurrentUserPendingRequest,
-    } = filterFriendsDto;
+    const { page, take, query, includes } = filterFriendsDto;
 
     const queryBuilder = this.dataSource
       .createQueryBuilder(User, 'u')
@@ -43,7 +37,7 @@ export class FriendService {
 
     let friends = await queryBuilder.getMany();
 
-    if (withMutualFriendsCount && currentUserId) {
+    if (includes?.includes('mutualFriendsCount') && currentUserId) {
       friends = await Promise.all(
         friends.map(async (friend) => {
           const mutualFriends = await this.getMutualFriends(
@@ -52,26 +46,27 @@ export class FriendService {
           );
           return {
             ...friend,
+            mutualFriends: mutualFriends,
             mutualFriendsCount: mutualFriends.length,
           };
         }),
       );
     }
 
-    if (withCurrentUserPendingRequest && currentUserId) {
+    if (includes?.includes('pendingRequest') && currentUserId) {
       friends = await Promise.all(
         friends.map(async (friend) => {
           const pendingRequest = await this.dataSource
             .createQueryBuilder(UserFriendRequest, 'ufr')
             .where(
-              'uft.senderId = :friendId AND uft.receiverId = :currentUserId',
+              'ufr.senderUserId = :friendId AND ufr.receiverUserId = :currentUserId',
               { currentUserId, friendId: friend.id },
             )
             .getOne();
 
           return {
             ...friend,
-            hasPendingRequest: !!pendingRequest,
+            pendingRequest: pendingRequest,
           };
         }),
       );

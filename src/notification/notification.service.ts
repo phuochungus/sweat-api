@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PageDto, PageMetaDto } from 'src/common/dto';
 import { GenericFilter } from 'src/common/generic/paginate';
 import { UserNotification } from 'src/entities';
+import { FilterNotificationDto } from 'src/notification/dto/filter-notification.dto';
 import { UpdateNotificationDto } from 'src/notification/dto/update-notification.dto';
 import { DataSource } from 'typeorm';
 
@@ -9,8 +10,12 @@ import { DataSource } from 'typeorm';
 export class NotificationService {
   constructor(private readonly dataSource: DataSource) {}
 
-  async getAll(filterDto: GenericFilter, { userId }) {
-    const { page, take } = filterDto;
+  async getAll(filterDto: FilterNotificationDto, { currentUserId }) {
+    if (filterDto.userId !== currentUserId) {
+      throw new ForbiddenException('Forbidden');
+    }
+
+    const { page, take, userId } = filterDto;
     const skip = (page - 1) * take;
 
     const queryBuilder = this.dataSource

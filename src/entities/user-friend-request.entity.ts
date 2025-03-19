@@ -6,6 +6,7 @@ import { User } from 'src/entities';
 @Entity('user_friend_request')
 export class UserFriendRequest extends BaseEntity {
   @Column({ nullable: false })
+  @ApiProperty()
   senderUserId!: number;
 
   @Column({ nullable: false })

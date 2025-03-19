@@ -15,21 +15,18 @@ import { JwtGuard } from 'src/common/guards';
 import { Auth, User } from 'src/common/decorators';
 import { FilterFriendsDto } from 'src/friend/dto/filter-friend.dto';
 import { FriendService } from 'src/friend/friend.service';
-import { NotificationService } from 'src/notification/notification.service';
-import { GenericFilter } from 'src/common/generic/paginate';
 
 @Auth()
 @UseGuards(JwtGuard)
-@Controller('user')
+@Controller('users')
 export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly friendService: FriendService,
-    private readonly notificationService: NotificationService,
   ) {}
 
-  @Patch('/:id')
-  async updateUser(
+  @Patch('/:id/profile')
+  async updateUserProfile(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
@@ -47,7 +44,7 @@ export class UserController {
     return user;
   }
 
-  @Get('/:id/friend')
+  @Get('/:id/friends')
   async getFriends(
     @User('id') currentUserId: string,
     @Param('id') userId: string,
@@ -73,13 +70,5 @@ export class UserController {
   @Get('/:id/friend-suggestion')
   async getFriendSuggestions(@Param('id') currentUserId: string) {
     return this.friendService.getSuggestions({ userId: currentUserId });
-  }
-
-  @Get('/:id/notification')
-  async getNotifications(
-    @Param('id') userId: string,
-    @Query() filterNotiDto: GenericFilter,
-  ) {
-    return this.notificationService.getAll(filterNotiDto, { userId });
   }
 }
