@@ -1,5 +1,4 @@
-import { ApiProperty, ApiPropertyOptional, PickType } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+import { PickType } from '@nestjs/swagger';
 import { PostMedia } from 'src/entities';
 
 export class PostMediaDto extends PickType(PostMedia, [

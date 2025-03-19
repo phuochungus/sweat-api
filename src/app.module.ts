@@ -9,12 +9,11 @@ import { PostModule } from './post/post.module';
 import { PostMediaModule } from './post-media/post-media.module';
 import { UserModule } from './user/user.module';
 import { ScheduleModule } from '@nestjs/schedule';
-import { TaskScheduleService } from './task-schedule/task-schedule.service';
 import { UserSettingModule } from './user-setting/user-setting.module';
-
 import { FriendModule } from './friend/friend.module';
 import { FriendRequestModule } from 'src/friend-request/friend-request.module';
 import { NotificationModule } from 'src/notification/notification.module';
+import { PostCommentModule } from './post-comment/post-comment.module';
 
 @Module({
   imports: [
@@ -42,8 +41,9 @@ import { NotificationModule } from 'src/notification/notification.module';
     FriendRequestModule,
     NotificationModule,
     FriendModule,
+    PostCommentModule,
   ],
   controllers: [AppController],
-  providers: [AppService, TaskScheduleService],
+  providers: [AppService],
 })
 export class AppModule {}

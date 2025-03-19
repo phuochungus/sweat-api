@@ -22,6 +22,10 @@ export class PostService {
   async create(createPostDto: CreatePostDto) {
     const post = this.postRepository.create(createPostDto);
     createPostDto.postMedia = createPostDto.postMedia.map((media) => {
+      media.url = media.url.replace(
+        process.env.AWS_S3_PUBLIC_URL,
+        process.env.AWS_S3_CDN_URL,
+      );
       const postMediaEntity = new PostMedia(media);
       return postMediaEntity;
     });
