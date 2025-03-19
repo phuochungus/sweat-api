@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import { DataSource } from 'typeorm';
 import { FilterPostCommentDto } from 'src/post-comment/dto/filter-post-comment.dto';
-import { Post, PostComment } from 'src/entities';
+import { Post, PostComment, React } from 'src/entities';
 import { PageDto, PageMetaDto } from 'src/common/dto';
 
 @Injectable()
@@ -34,8 +34,9 @@ export class PostCommentService {
     });
   }
 
-  async findAll(filterPostCommentDto: FilterPostCommentDto) {
-    const { page, postId, replyCommentId, take } = filterPostCommentDto;
+  async findAll(filterPostCommentDto: FilterPostCommentDto, { currentUserId }) {
+    const { page, postId, replyCommentId, take, includes } =
+      filterPostCommentDto;
     const queryBuilder = this.dataSource.createQueryBuilder(
       PostComment,
       'post_comment',
@@ -50,13 +51,25 @@ export class PostCommentService {
       });
     }
 
-    const [items, itemCount] = await Promise.all([
+    let [items, itemCount] = await Promise.all([
       queryBuilder
         .take(take)
         .skip((page - 1) * take)
         .getMany(),
       queryBuilder.getCount(),
     ]);
+
+    if (currentUserId && includes?.includes('isReacted')) {
+      items = await Promise.all(
+        items.map(async (postComment) => ({
+          ...postComment,
+          isReacted: await this.isUserReactedToPostComment(
+            currentUserId,
+            postComment.id,
+          ),
+        })),
+      );
+    }
 
     const pageMetaDto = new PageMetaDto({
       itemCount,
@@ -73,5 +86,17 @@ export class PostCommentService {
       .from('post_comment')
       .where('id = :id', { id })
       .execute();
+  }
+
+  private async isUserReactedToPostComment(
+    userId: number,
+    postCommentId: number,
+  ) {
+    const query = await this.dataSource
+      .createQueryBuilder(React, 'react')
+      .where('react.userId = :userId', { userId })
+      .andWhere('react.postCommentId = :postCommentId', { postCommentId })
+      .getOne();
+    return query;
   }
 }

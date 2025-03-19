@@ -29,8 +29,8 @@ export class PostCommentController {
   }
 
   @Get()
-  findAll(@Query() query: FilterPostCommentDto) {
-    return this.postCommentService.findAll(query);
+  findAll(@Query() query: FilterPostCommentDto, @User('id') userId: number) {
+    return this.postCommentService.findAll(query, { currentUserId: userId });
   }
 
   @Delete(':id')

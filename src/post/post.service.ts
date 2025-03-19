@@ -34,24 +34,29 @@ export class PostService {
   }
 
   async findAll(filterPostDto: FilterPostsDto, { currentUserId }) {
-    const { createdBy, isReel, page, take } = filterPostDto;
+    const { createdBy, page, take, includes } = filterPostDto;
     const queryBuilder = this.dataSource.createQueryBuilder(Post, 'post');
 
     if (createdBy) {
       queryBuilder.andWhere('post.createdBy = :createdBy', { createdBy });
     }
 
-    if (isReel) {
-      queryBuilder.andWhere('post.media_count = 1');
-    }
-
-    const [item, itemCount] = await Promise.all([
+    let [item, itemCount] = await Promise.all([
       queryBuilder
         .take(take)
         .skip((page - 1) * take)
         .getMany(),
       queryBuilder.getCount(),
     ]);
+
+    if (currentUserId && includes?.includes('isReacted')) {
+      item = await Promise.all(
+        item.map(async (post) => ({
+          ...post,
+          isReacted: await this.isUserReactedToPost(currentUserId, post.id),
+        })),
+      );
+    }
 
     const pageMetaDto = new PageMetaDto({
       itemCount,
@@ -200,5 +205,14 @@ export class PostService {
     });
 
     return new PageDto(items, pageMetaDto);
+  }
+
+  private async isUserReactedToPost(userId: number, postId: number) {
+    const query = await this.dataSource
+      .createQueryBuilder(React, 'react')
+      .where('react.userId = :userId', { userId })
+      .andWhere('react.postId = :postId', { postId })
+      .getOne();
+    return query;
   }
 }
