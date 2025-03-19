@@ -17,6 +17,7 @@ import { PageDto } from 'src/common/dto';
 import { Auth, User } from 'src/common/decorators';
 import { FilterPostsDto } from 'src/post/dto/filter-posts.dto';
 import { JwtGuard } from 'src/common/guards';
+import { FilterLikeDto } from 'src/post/dto/filter-like.dto';
 
 @Controller('posts')
 @Auth()
@@ -59,5 +60,15 @@ export class PostController {
   @Post(':id/likes')
   async likePost(@User('id') userId: number, @Param('id') postId: number) {
     return this.postService.likePost(userId, postId);
+  }
+
+  @Delete(':id/likes')
+  async unlikePost(@User('id') userId: number, @Param('id') postId: number) {
+    return this.postService.unlikePost(userId, postId);
+  }
+
+  @Get(':id/likes')
+  async getLikes(@Param('id') postId: number, @Query() q: FilterLikeDto) {
+    return this.postService.getLikes({ postId, ...q });
   }
 }

@@ -6,8 +6,9 @@ import { Post } from 'src/entities/post.entity';
 import { DataSource, Repository } from 'typeorm';
 import { FilterPostsDto } from 'src/post/dto/filter-posts.dto';
 import { PageDto, PageMetaDto } from 'src/common/dto';
-import { PostMedia, UserFriend } from 'src/entities';
+import { PostMedia, React, UserFriend } from 'src/entities';
 import { ReactType } from 'src/common/enums';
+import { FilterLikeDto } from 'src/post/dto/filter-like.dto';
 
 @Injectable()
 export class PostService {
@@ -121,7 +122,6 @@ export class PostService {
     if (!post) {
       throw new NotFoundException('Post not found');
     }
-
     await this.dataSource.transaction(async (manager) => {
       await manager
         .createQueryBuilder()
@@ -143,5 +143,58 @@ export class PostService {
         .where('id = :id', { id: postId })
         .execute();
     });
+  }
+
+  async unlikePost(userId: number, postId: number) {
+    const post = await this.postRepository.findOne({
+      where: {
+        id: postId,
+      },
+    });
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    await this.dataSource.transaction(async (manager) => {
+      await manager
+        .createQueryBuilder()
+        .delete()
+        .from('post_react')
+        .where('userId = :userId AND postId = :postId', { userId, postId })
+        .execute();
+
+      await manager
+        .createQueryBuilder()
+        .update(Post)
+        .set({
+          reactCount: () => '"reactCount" - 1',
+        })
+        .where('id = :id', { id: postId })
+        .execute();
+    });
+  }
+
+  async getLikes({ postId, page, take }: FilterLikeDto & { postId: number }) {
+    const queryBuilder = this.dataSource
+      .createQueryBuilder(React, 'react')
+      .leftJoinAndSelect('react.user', 'user')
+      .where('react.postId = :postId', { postId })
+      .andWhere('react.type = :type', { type: ReactType.HEART })
+      .orderBy('react.createdAt', 'DESC');
+
+    const [items, itemCount] = await Promise.all([
+      queryBuilder
+        .take(take)
+        .skip((page - 1) * take)
+        .getMany(),
+      queryBuilder.getCount(),
+    ]);
+
+    const pageMetaDto = new PageMetaDto({
+      itemCount,
+      pageOptionsDto: { page, take },
+    });
+
+    return new PageDto(items, pageMetaDto);
   }
 }
