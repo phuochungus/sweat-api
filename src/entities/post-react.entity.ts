@@ -2,6 +2,7 @@ import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { User } from './user.entity';
 import { ReactType } from 'src/common/enums';
+import { Post } from 'src/entities/post.entity';
 
 @Entity('post_react')
 export class PostReact extends BaseEntity {
@@ -17,4 +18,7 @@ export class PostReact extends BaseEntity {
   @ManyToOne(() => User)
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @ManyToOne(() => Post)
+  post: Post;
 }

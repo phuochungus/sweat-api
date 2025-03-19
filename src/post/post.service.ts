@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,6 +7,7 @@ import { DataSource, Repository } from 'typeorm';
 import { FilterPostsDto } from 'src/post/dto/filter-posts.dto';
 import { PageDto, PageMetaDto } from 'src/common/dto';
 import { PostMedia, UserFriend } from 'src/entities';
+import { ReactType } from 'src/common/enums';
 
 @Injectable()
 export class PostService {
@@ -23,11 +24,8 @@ export class PostService {
       const postMediaEntity = new PostMedia(media);
       return postMediaEntity;
     });
-
-    await this.postRepository.save(post, { transaction: true });
-
     post.mediaCount = createPostDto.postMedia.length;
-    return await this.postRepository.save(post);
+    return await this.postRepository.save(post, { transaction: true });
   }
 
   async findAll(filterPostDto: FilterPostsDto, { currentUserId }) {
@@ -112,5 +110,38 @@ export class PostService {
     });
 
     return new PageDto(items, pageMetaDto);
+  }
+
+  async likePost(userId: number, postId: number) {
+    const post = await this.postRepository.findOne({
+      where: {
+        id: postId,
+      },
+    });
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    await this.dataSource.transaction(async (manager) => {
+      await manager
+        .createQueryBuilder()
+        .insert()
+        .into('post_react')
+        .values({
+          userId,
+          postId,
+          type: ReactType.HEART,
+        })
+        .execute();
+
+      await manager
+        .createQueryBuilder()
+        .update(Post)
+        .set({
+          reactCount: () => '"reactCount" + 1',
+        })
+        .where('id = :id', { id: postId })
+        .execute();
+    });
   }
 }

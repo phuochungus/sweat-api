@@ -55,4 +55,9 @@ export class PostController {
   async getFeed(@User('id') userId: number, @Query() q: FilterPostsDto) {
     return this.postService.getFeed(userId, q);
   }
+
+  @Post(':id/likes')
+  async likePost(@User('id') userId: number, @Param('id') postId: number) {
+    return this.postService.likePost(userId, postId);
+  }
 }
