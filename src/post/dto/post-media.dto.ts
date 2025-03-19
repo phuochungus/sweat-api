@@ -1,19 +1,10 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PickType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
+import { PostMedia } from 'src/entities';
 
-export class PostMediaDto {
-  @ApiProperty()
-  @Transform(({ value }) =>
-    value.replace(process.env.AWS_S3_PUBLIC_URL, process.env.AWS_S3_CDN_URL),
-  )
-  url!: string;
-
-  @ApiProperty()
-  priority!: number;
-
-  @ApiProperty()
-  type!: string;
-
-  @ApiPropertyOptional()
-  text?: string;
-}
+export class PostMediaDto extends PickType(PostMedia, [
+  'url',
+  'priority',
+  'type',
+  'text',
+] as const) {}

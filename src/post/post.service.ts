@@ -6,7 +6,7 @@ import { Post } from 'src/entities/post.entity';
 import { DataSource, Repository } from 'typeorm';
 import { FilterPostsDto } from 'src/post/dto/filter-posts.dto';
 import { PageDto, PageMetaDto } from 'src/common/dto';
-import { UserFriend } from 'src/entities';
+import { PostMedia, UserFriend } from 'src/entities';
 
 @Injectable()
 export class PostService {
@@ -18,7 +18,16 @@ export class PostService {
   ) {}
 
   async create(createPostDto: CreatePostDto) {
-    return await this.postRepository.insert(createPostDto);
+    const post = this.postRepository.create(createPostDto);
+    createPostDto.postMedia = createPostDto.postMedia.map((media) => {
+      const postMediaEntity = new PostMedia(media);
+      return postMediaEntity;
+    });
+
+    await this.postRepository.save(post, { transaction: true });
+
+    post.mediaCount = createPostDto.postMedia.length;
+    return await this.postRepository.save(post);
   }
 
   async findAll(filterPostDto: FilterPostsDto, { currentUserId }) {
@@ -48,12 +57,23 @@ export class PostService {
     return new PageDto(item, pageMetaDto);
   }
 
-  update(id: number, updatePostDto: UpdatePostDto) {
-    return `This action updates a #${id} post`;
+  async findOne(id: number) {
+    return await this.postRepository.findOne({
+      where: {
+        id,
+      },
+      relations: {
+        postMedia: true,
+      },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} post`;
+  async update(id: number, updatePostDto: UpdatePostDto) {
+    return await this.postRepository.update(id, updatePostDto);
+  }
+
+  async remove(id: number) {
+    return await this.postRepository.delete(id);
   }
 
   async getFeed(userId: number, filterPostDto: FilterPostsDto) {

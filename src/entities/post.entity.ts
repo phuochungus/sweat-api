@@ -2,10 +2,12 @@ import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { User } from './user.entity';
 import { PostPrivacy } from 'src/common/enums';
-import { PostTag } from './post-tag.entity';
+import { ApiProperty } from '@nestjs/swagger';
+import { PostMedia } from 'src/entities/post-media.entity';
 
 @Entity('post')
 export class Post extends BaseEntity {
+  @ApiProperty()
   @Column()
   text!: string;
 
@@ -19,9 +21,11 @@ export class Post extends BaseEntity {
   mediaCount!: number;
 
   @Column({ type: 'enum', enum: PostPrivacy })
+  @ApiProperty({ enum: PostPrivacy })
   privacy!: PostPrivacy;
 
   @Column()
+  @ApiProperty()
   userId!: number;
 
   @Column({ nullable: true })
@@ -31,6 +35,6 @@ export class Post extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @OneToMany(() => PostTag, (postTag) => postTag.post, { cascade: true })
-  tags: PostTag[];
+  @OneToMany(() => PostMedia, (postMedia) => postMedia.post, { cascade: true })
+  postMedia: PostMedia[];
 }

@@ -1,7 +1,6 @@
 export * from './post-comment.entity';
 export * from './post-media.entity';
 export * from './post-react.entity';
-export * from './post-tag.entity';
 export * from './post.entity';
 export * from './user-friend-request.entity';
 export * from './user-friend.entity';
