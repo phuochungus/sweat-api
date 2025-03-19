@@ -2,19 +2,36 @@ import { Injectable } from '@nestjs/common';
 import { CreatePostCommentDto } from './dto/create-post-comment.dto';
 import { DataSource } from 'typeorm';
 import { FilterPostCommentDto } from 'src/post-comment/dto/filter-post-comment.dto';
-import { PostComment } from 'src/entities';
+import { Post, PostComment } from 'src/entities';
 import { PageDto, PageMetaDto } from 'src/common/dto';
 
 @Injectable()
 export class PostCommentService {
   constructor(private readonly dataSource: DataSource) {}
-  async create(createPostCommentDto: CreatePostCommentDto) {
-    return await this.dataSource
-      .createQueryBuilder()
-      .insert()
-      .into('post_comment')
-      .values(createPostCommentDto)
-      .execute();
+  async create(createPostCommentDto: CreatePostCommentDto, { currentUserId }) {
+    return await this.dataSource.transaction(async (manager) => {
+      const postComment = new PostComment();
+      postComment.text = createPostCommentDto.text;
+      postComment.postId = createPostCommentDto.postId;
+      postComment.replyCommentId = createPostCommentDto.replyCommentId;
+      postComment.userId = currentUserId;
+      const [comment, post] = await Promise.all([
+        manager.findOne(PostComment, {
+          where: { id: createPostCommentDto.replyCommentId },
+        }),
+        manager.findOne(Post, { where: { id: createPostCommentDto.postId } }),
+      ]);
+      if (comment) {
+        comment.replyCount++;
+        await manager.save(comment);
+        await manager.save(postComment);
+      }
+      if (post) {
+        post.reactCount++;
+        await manager.save(post);
+        await manager.save(postComment);
+      }
+    });
   }
 
   async findAll(filterPostCommentDto: FilterPostCommentDto) {
