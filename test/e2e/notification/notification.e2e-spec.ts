@@ -2,6 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { TestUtils } from '../helpers/test-utils';
 import { NotificationStatus } from '../../../src/common/enums';
+import { SOCIAL } from 'src/notification/enum';
 
 describe('Notification (e2e)', () => {
   let app: INestApplication;
@@ -181,7 +182,7 @@ describe('Notification (e2e)', () => {
           testUser.id,
           'Notification for another user',
           NotificationStatus.UNREAD,
-          'TEST_NOTIFICATION',
+          SOCIAL.TEST_NOTIFICATION,
         ],
       );
 
