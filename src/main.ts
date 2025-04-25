@@ -65,14 +65,14 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api-docs', app, document);
+  SwaggerModule.setup('docs', app, document);
 
   // Start the server
   const port = configService.get<number>('port') || 3000;
   await app.listen(port);
   console.log(`Application is running on: ${await app.getUrl()}`);
   console.log(
-    `Swagger documentation available at: ${await app.getUrl()}/api-docs`,
+    `Swagger documentation available at: ${await app.getUrl()}/docs`,
   );
 }
 
