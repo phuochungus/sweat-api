@@ -21,7 +21,9 @@ export class JwtGuard implements CanActivate {
   ) {
     const environment = this.configService.get('environment');
     this.isTestMode = environment === 'test';
-    console.log(`JwtGuard initialized with environment: ${environment}, isTestMode: ${this.isTestMode}`);
+    console.log(
+      `JwtGuard initialized with environment: ${environment}, isTestMode: ${this.isTestMode}`,
+    );
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -39,10 +41,12 @@ export class JwtGuard implements CanActivate {
 
     try {
       let userId: string;
-      
+
       // Log token info for debugging
-      console.log(`Token received: ${token.substring(0, 10)}... isTestMode: ${this.isTestMode}`);
-      
+      console.log(
+        `Token received: ${token.substring(0, 10)}... isTestMode: ${this.isTestMode}`,
+      );
+
       // Special handling for test tokens
       if (this.isTestMode && token.startsWith('test_token_')) {
         console.log('Processing test token...');
@@ -50,12 +54,12 @@ export class JwtGuard implements CanActivate {
         const parts = token.split('_');
         const testUserId = parts[parts.length - 1];
         userId = `test_firebase_id_${testUserId}`;
-        
+
         // For test users with no id suffix, use a default
         if (userId === 'test_firebase_id_') {
           userId = 'test_firebase_id';
         }
-        
+
         console.log(`Test token parsed. Using firebaseId: ${userId}`);
       } else {
         // Normal firebase token verification
@@ -64,18 +68,22 @@ export class JwtGuard implements CanActivate {
         userId = decodedToken.uid;
         console.log(`Firebase token verified. UID: ${userId}`);
       }
-      
+
       // Find user in our database based on Firebase ID
-      let user = await this.userRepository.findOne({ 
-        where: { firebaseId: userId } 
+      let user = await this.userRepository.findOne({
+        where: { firebaseId: userId },
       });
-      
+
       if (!user) {
-        console.log(`User not found with firebaseId: ${userId}. Creating a new user...`);
-        
+        console.log(
+          `User not found with firebaseId: ${userId}. Creating a new user...`,
+        );
+
         // For test mode, create a new user with test data
         if (this.isTestMode) {
-          const userIdNumber = userId.includes('_') ? parseInt(userId.split('_').pop()) : 1;
+          const userIdNumber = userId.includes('_')
+            ? parseInt(userId.split('_').pop())
+            : 1;
           user = this.userRepository.create({
             firebaseId: userId,
             fullname: `Test User ${userIdNumber}`,
@@ -103,13 +111,13 @@ export class JwtGuard implements CanActivate {
             });
           }
         }
-        
+
         await this.userRepository.save(user);
         console.log(`Created new user with ID: ${user.id}`);
       } else {
         console.log(`User found: ${user.id} (${user.firebaseId})`);
       }
-      
+
       // Attach user to request for use in controllers
       request.user = user;
       return true;

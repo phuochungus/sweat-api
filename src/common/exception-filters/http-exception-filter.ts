@@ -13,7 +13,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
-    
+
     const status = exception.getStatus();
     const exceptionResponse = exception.getResponse();
 
@@ -22,17 +22,21 @@ export class HttpExceptionFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       path: request.url,
       method: request.method,
-      message: typeof exceptionResponse === 'string' 
-        ? exceptionResponse 
-        : (exceptionResponse as Record<string, any>).message || exception.message,
+      message:
+        typeof exceptionResponse === 'string'
+          ? exceptionResponse
+          : (exceptionResponse as Record<string, any>).message ||
+            exception.message,
     };
 
     // Add validation errors if they exist
     if (
-      typeof exceptionResponse === 'object' && 
+      typeof exceptionResponse === 'object' &&
       (exceptionResponse as Record<string, any>).errors
     ) {
-      errorResponse['errors'] = (exceptionResponse as Record<string, any>).errors;
+      errorResponse['errors'] = (
+        exceptionResponse as Record<string, any>
+      ).errors;
     }
 
     response.status(status).json(errorResponse);

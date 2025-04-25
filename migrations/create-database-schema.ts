@@ -188,14 +188,30 @@ export class CreateDatabaseSchema1742305341178 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Drop foreign key constraints first
-    await queryRunner.query(`ALTER TABLE "user_friend_request" DROP CONSTRAINT "FK_add2c92597828d62fb36dac6d7c"`);
-    await queryRunner.query(`ALTER TABLE "user_friend_request" DROP CONSTRAINT "FK_7e9048e9deba09441504b1a8692"`);
-    await queryRunner.query(`ALTER TABLE "user_notification" DROP CONSTRAINT "FK_f6bb5226d6d0811cbe2f513ab15"`);
-    await queryRunner.query(`ALTER TABLE "post_react" DROP CONSTRAINT "FK_88dcbca81e057100df31103dffc"`);
-    await queryRunner.query(`ALTER TABLE "post_react" DROP CONSTRAINT "FK_1d8bed45e67c89e3effddfdde2d"`);
-    await queryRunner.query(`ALTER TABLE "post_react" DROP CONSTRAINT "FK_b1d7fd78f242a561c35a346d6e3"`);
-    await queryRunner.query(`ALTER TABLE "post_comment" DROP CONSTRAINT "FK_86fe082a604dff18a1c10b8a96e"`);
-    await queryRunner.query(`ALTER TABLE "post_media" DROP CONSTRAINT "FK_3b7134b6640ccbcf02d34da4e15"`);
+    await queryRunner.query(
+      `ALTER TABLE "user_friend_request" DROP CONSTRAINT "FK_add2c92597828d62fb36dac6d7c"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "user_friend_request" DROP CONSTRAINT "FK_7e9048e9deba09441504b1a8692"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "user_notification" DROP CONSTRAINT "FK_f6bb5226d6d0811cbe2f513ab15"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "post_react" DROP CONSTRAINT "FK_88dcbca81e057100df31103dffc"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "post_react" DROP CONSTRAINT "FK_1d8bed45e67c89e3effddfdde2d"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "post_react" DROP CONSTRAINT "FK_b1d7fd78f242a561c35a346d6e3"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "post_comment" DROP CONSTRAINT "FK_86fe082a604dff18a1c10b8a96e"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "post_media" DROP CONSTRAINT "FK_3b7134b6640ccbcf02d34da4e15"`,
+    );
 
     // Drop tables
     await queryRunner.query(`DROP TABLE "views_tracking"`);

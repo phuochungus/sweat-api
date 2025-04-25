@@ -9,7 +9,7 @@ import * as admin from 'firebase-admin';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
-  
+
   // Enable CORS
   app.enableCors({
     origin: true,
@@ -30,7 +30,7 @@ async function bootstrap() {
       console.error('Failed to initialize Firebase Admin SDK:', error);
     }
   }
-  
+
   // Global validation pipe
   app.useGlobalPipes(
     new ValidationPipe({
@@ -39,13 +39,13 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
-  
+
   // Global exception filter
   app.useGlobalFilters(new HttpExceptionFilter());
-  
+
   // API prefix
   app.setGlobalPrefix('api/v1');
-  
+
   // Setup Swagger
   const config = new DocumentBuilder()
     .setTitle('Sweat Social API')
@@ -63,15 +63,17 @@ async function bootstrap() {
       'firebase-jwt',
     )
     .build();
-    
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api-docs', app, document);
-  
+
   // Start the server
   const port = configService.get<number>('port') || 3000;
   await app.listen(port);
   console.log(`Application is running on: ${await app.getUrl()}`);
-  console.log(`Swagger documentation available at: ${await app.getUrl()}/api-docs`);
+  console.log(
+    `Swagger documentation available at: ${await app.getUrl()}/api-docs`,
+  );
 }
 
 bootstrap();

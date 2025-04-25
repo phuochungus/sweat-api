@@ -1,7 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { Post, PostComment, PostReact, User, UserNotification } from 'src/entities';
+import {
+  Post,
+  PostComment,
+  PostReact,
+  User,
+  UserNotification,
+} from 'src/entities';
 import { NotificationStatus, ReactType } from 'src/common/enums';
 import { SOCIAL } from 'src/notification/enum';
 import { TEMPLATE } from 'src/notification/template';
@@ -31,7 +37,7 @@ export class PostReactService {
       where: { id: postId },
       relations: ['user'],
     });
-    
+
     if (!post) {
       throw new NotFoundException(`Post with id ${postId} not found`);
     }
@@ -40,7 +46,7 @@ export class PostReactService {
     const existingReaction = await this.postReactRepository.findOne({
       where: { userId, postId },
     });
-    
+
     if (existingReaction) {
       // If already reacted with same type, do nothing
       return existingReaction;
@@ -53,9 +59,9 @@ export class PostReactService {
         postId,
         type: ReactType.LIKE,
       });
-      
+
       await manager.save(postReact);
-      
+
       // Increment post reaction count
       await manager
         .createQueryBuilder()
@@ -69,20 +75,22 @@ export class PostReactService {
         const currentUser = await manager.findOne(User, {
           where: { id: userId },
         });
-        
+
         const notification = this.userNotificationRepository.create({
           receiverUserId: post.userId,
           senderUserId: userId,
           postId,
           type: SOCIAL.REACT,
           status: NotificationStatus.UNREAD,
-          text: TEMPLATE.REACT.replace('<n>', currentUser.fullname)
-            .replace('<content>', post.text.substring(0, 30) + (post.text.length > 30 ? '...' : '')),
+          text: TEMPLATE.REACT.replace('<n>', currentUser.fullname).replace(
+            '<content>',
+            post.text.substring(0, 30) + (post.text.length > 30 ? '...' : ''),
+          ),
         });
-        
+
         await manager.save(notification);
       }
-      
+
       return postReact;
     });
   }
@@ -95,7 +103,7 @@ export class PostReactService {
     const post = await this.postRepository.findOne({
       where: { id: postId },
     });
-    
+
     if (!post) {
       throw new NotFoundException(`Post with id ${postId} not found`);
     }
@@ -104,15 +112,17 @@ export class PostReactService {
     const existingReaction = await this.postReactRepository.findOne({
       where: { userId, postId },
     });
-    
+
     if (!existingReaction) {
-      throw new NotFoundException(`Reaction on post with id ${postId} not found`);
+      throw new NotFoundException(
+        `Reaction on post with id ${postId} not found`,
+      );
     }
 
     return this.dataSource.transaction(async (manager) => {
       // Delete reaction
       await manager.delete(PostReact, existingReaction.id);
-      
+
       // Decrement post reaction count
       await manager
         .createQueryBuilder()
@@ -132,7 +142,7 @@ export class PostReactService {
           .andWhere('type = :type', { type: SOCIAL.REACT })
           .execute();
       }
-      
+
       return { removed: true };
     });
   }
@@ -146,7 +156,7 @@ export class PostReactService {
       where: { id: commentId },
       relations: ['user', 'post'],
     });
-    
+
     if (!comment) {
       throw new NotFoundException(`Comment with id ${commentId} not found`);
     }
@@ -155,7 +165,7 @@ export class PostReactService {
     const existingReaction = await this.postReactRepository.findOne({
       where: { userId, commentId },
     });
-    
+
     if (existingReaction) {
       // If already reacted, do nothing
       return existingReaction;
@@ -168,9 +178,9 @@ export class PostReactService {
         commentId,
         type: ReactType.LIKE,
       });
-      
+
       await manager.save(commentReact);
-      
+
       // Increment comment reaction count
       await manager
         .createQueryBuilder()
@@ -184,20 +194,23 @@ export class PostReactService {
         const currentUser = await manager.findOne(User, {
           where: { id: userId },
         });
-        
+
         const notification = this.userNotificationRepository.create({
           receiverUserId: comment.userId,
           senderUserId: userId,
           postId: comment.postId,
           type: SOCIAL.REACT,
           status: NotificationStatus.UNREAD,
-          text: TEMPLATE.REACT.replace('<n>', currentUser.fullname)
-            .replace('<content>', comment.text.substring(0, 30) + (comment.text.length > 30 ? '...' : '')),
+          text: TEMPLATE.REACT.replace('<n>', currentUser.fullname).replace(
+            '<content>',
+            comment.text.substring(0, 30) +
+              (comment.text.length > 30 ? '...' : ''),
+          ),
         });
-        
+
         await manager.save(notification);
       }
-      
+
       return commentReact;
     });
   }
@@ -210,7 +223,7 @@ export class PostReactService {
     const comment = await this.postCommentRepository.findOne({
       where: { id: commentId },
     });
-    
+
     if (!comment) {
       throw new NotFoundException(`Comment with id ${commentId} not found`);
     }
@@ -219,15 +232,17 @@ export class PostReactService {
     const existingReaction = await this.postReactRepository.findOne({
       where: { userId, commentId },
     });
-    
+
     if (!existingReaction) {
-      throw new NotFoundException(`Reaction on comment with id ${commentId} not found`);
+      throw new NotFoundException(
+        `Reaction on comment with id ${commentId} not found`,
+      );
     }
 
     return this.dataSource.transaction(async (manager) => {
       // Delete reaction
       await manager.delete(PostReact, existingReaction.id);
-      
+
       // Decrement comment reaction count
       await manager
         .createQueryBuilder()
@@ -235,7 +250,7 @@ export class PostReactService {
         .set({ reactCount: () => 'GREATEST(reactCount - 1, 0)' })
         .where('id = :id', { id: commentId })
         .execute();
-      
+
       return { removed: true };
     });
   }

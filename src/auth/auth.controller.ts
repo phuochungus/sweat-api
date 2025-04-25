@@ -11,9 +11,9 @@ export class AuthController {
   @Post('verify')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Verify Firebase token and create or get user' })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Token verified and user retrieved successfully' 
+  @ApiResponse({
+    status: 200,
+    description: 'Token verified and user retrieved successfully',
   })
   async verifyToken(@Body() verifyTokenDto: VerifyTokenDto) {
     return this.authService.verifyTokenAndGetUser(verifyTokenDto.token);

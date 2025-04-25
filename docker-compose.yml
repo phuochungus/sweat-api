@@ -5,7 +5,7 @@ services:
     image: postgres:15-alpine
     container_name: sweat-postgres
     ports:
-      - "5432:5432"
+      - '5432:5432'
     environment:
       POSTGRES_USER: ${ORM_USERNAME:-postgres}
       POSTGRES_PASSWORD: ${ORM_PASSWORD:-postgres}
@@ -15,7 +15,7 @@ services:
     networks:
       - sweat-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 10s
       timeout: 5s
       retries: 5

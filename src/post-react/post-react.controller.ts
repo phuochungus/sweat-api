@@ -1,10 +1,10 @@
 import {
-  Controller, 
-  Post, 
-  Delete, 
-  Param, 
-  ParseIntPipe, 
-  UseGuards
+  Controller,
+  Post,
+  Delete,
+  Param,
+  ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Auth, User } from 'src/common/decorators';

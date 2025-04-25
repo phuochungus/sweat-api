@@ -23,7 +23,9 @@ import { DataSource } from 'typeorm';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [process.env.NODE_ENV === 'test' ? testConfiguration : configuration],
+      load: [
+        process.env.NODE_ENV === 'test' ? testConfiguration : configuration,
+      ],
       isGlobal: true,
     }),
     ScheduleModule.forRoot(),

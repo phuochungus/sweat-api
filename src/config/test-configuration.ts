@@ -5,7 +5,7 @@ export default () => ({
   port: parseInt(process.env.TEST_PORT) || 3333,
   environment: 'test',
   adminToken: 'test_admin_token',
-  
+
   database: {
     type: 'postgres',
     host: process.env.TEST_DB_HOST || 'localhost',
@@ -21,15 +21,15 @@ export default () => ({
       connectionLimit: 10,
     },
   } as TypeOrmModuleOptions,
-  
+
   // Test configuration for Firebase Emulator
   firebase: {
     useEmulator: true,
-    emulatorHost: 'localhost', 
+    emulatorHost: 'localhost',
     emulatorPort: 9099, // Default Firebase Auth emulator port
     emulatorProjectId: 'sweat-api-test',
   },
-  
+
   // Simplified AWS configuration for testing
   aws: {
     accessKeyId: 'test-access-key',

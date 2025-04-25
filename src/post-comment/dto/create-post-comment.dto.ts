@@ -4,7 +4,7 @@ import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 export class CreatePostCommentDto {
   @ApiProperty({
     description: 'The ID of the post to comment on',
-    example: 1
+    example: 1,
   })
   @IsNumber()
   @IsNotEmpty()
@@ -12,7 +12,7 @@ export class CreatePostCommentDto {
 
   @ApiProperty({
     description: 'The text content of the comment',
-    example: 'This is a great post!'
+    example: 'This is a great post!',
   })
   @IsString()
   @IsNotEmpty()
@@ -20,7 +20,7 @@ export class CreatePostCommentDto {
 
   @ApiPropertyOptional({
     description: 'The ID of the parent comment if this is a reply',
-    example: 5
+    example: 5,
   })
   @IsNumber()
   @IsOptional()

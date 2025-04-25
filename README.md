@@ -57,17 +57,20 @@ A fully-featured social media backend API built with NestJS and PostgreSQL, offe
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/yourusername/sweat-api.git
 cd sweat-api
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Create a `.env` file from the example:
+
 ```bash
 cp .env.example .env
 ```

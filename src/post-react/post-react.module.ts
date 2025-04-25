@@ -7,7 +7,13 @@ import { PostReact } from 'src/entities/post-react.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Post, PostComment, PostReact, User, UserNotification]),
+    TypeOrmModule.forFeature([
+      Post,
+      PostComment,
+      PostReact,
+      User,
+      UserNotification,
+    ]),
   ],
   controllers: [PostReactController],
   providers: [PostReactService],

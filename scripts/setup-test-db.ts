@@ -15,13 +15,13 @@ async function setupTestDatabase() {
   try {
     const config = testConfig().database as PostgresConnectionOptions;
     console.log('🔧 Setting up test database...');
-    
+
     // Create the test database if it doesn't exist already
     const createDbCommand = `
       psql -U ${config.username} -h ${config.host} -p ${config.port} -c "SELECT 1 FROM pg_database WHERE datname = '${config.database}'" | grep -q 1 || 
       psql -U ${config.username} -h ${config.host} -p ${config.port} -c "CREATE DATABASE ${config.database}"
     `;
-    
+
     console.log(`⏳ Creating test database if not exists: ${config.database}`);
     await execAsync(createDbCommand);
     console.log('✅ Test database created or already exists');
@@ -34,7 +34,9 @@ async function setupTestDatabase() {
       username: config.username,
       password: config.password,
       database: config.database,
-      entities: [path.join(__dirname, '..', 'src', 'entities', '*.entity.{ts,js}')],
+      entities: [
+        path.join(__dirname, '..', 'src', 'entities', '*.entity.{ts,js}'),
+      ],
       synchronize: false, // We'll handle this manually
       logging: false,
     });
@@ -58,7 +60,7 @@ async function setupTestDatabase() {
       // Always close the connection
       await dataSource.destroy();
     }
-    
+
     console.log('🚀 Test database setup complete!');
     return true;
   } catch (error) {

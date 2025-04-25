@@ -6,7 +6,7 @@ export class UpdateNotificationDto {
   @ApiProperty({
     description: 'IDs of the notifications to update',
     example: [1, 2, 3],
-    type: [Number]
+    type: [Number],
   })
   @IsArray()
   @IsNumber({}, { each: true })
@@ -16,7 +16,7 @@ export class UpdateNotificationDto {
   @ApiProperty({
     description: 'New notification status',
     enum: NotificationStatus,
-    example: NotificationStatus.READ
+    example: NotificationStatus.READ,
   })
   @IsEnum(NotificationStatus)
   @IsNotEmpty()

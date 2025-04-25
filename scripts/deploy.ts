@@ -22,12 +22,12 @@ async function runCommand(command: string): Promise<void> {
 async function copyEnvForEnvironment(env: string) {
   const targetEnvFile = path.join(projectRoot, `.env.${env}`);
   const destEnvFile = path.join(projectRoot, '.env');
-  
+
   if (!fs.existsSync(targetEnvFile)) {
     console.error(`Environment file .env.${env} not found`);
     process.exit(1);
   }
-  
+
   fs.copyFileSync(targetEnvFile, destEnvFile);
   console.log(`✅ Environment file copied from .env.${env} to .env`);
 }
@@ -41,7 +41,7 @@ async function main() {
   try {
     // Set the appropriate environment variables
     await copyEnvForEnvironment(environment);
-    
+
     // Build the application
     await runCommand('npm run build');
     console.log('✅ Build complete');

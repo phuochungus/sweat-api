@@ -19,35 +19,38 @@ export class TestUtils {
   static async createTestApp(): Promise<INestApplication> {
     // Override NODE_ENV to ensure test config is used
     process.env.NODE_ENV = 'test';
-    
+
     // Create and configure the testing module with our test configuration
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    })
-    .compile();
+    }).compile();
 
     const app = moduleFixture.createNestApplication();
     await app.init();
-    
+
     // Store a reference to the data source for reuse
     if (!this.dataSource || !this.dataSource.isInitialized) {
       try {
         this.dataSource = app.get(DataSource);
       } catch (error) {
-        console.warn('DataSource not available in app context, creating a new one');
+        console.warn(
+          'DataSource not available in app context, creating a new one',
+        );
         this.dataSource = getTestDataSource();
         await this.dataSource.initialize();
-        
+
         // Add the DataSource to the app as a custom provider so it can be injected
-        app['applicationConfig'].setGlobalPrefix = app['applicationConfig'].getGlobalPrefix;
-        app['applicationConfig'].globalProviders = app['applicationConfig'].globalProviders || new Map();
+        app['applicationConfig'].setGlobalPrefix =
+          app['applicationConfig'].getGlobalPrefix;
+        app['applicationConfig'].globalProviders =
+          app['applicationConfig'].globalProviders || new Map();
         app['applicationConfig'].globalProviders.set('DataSource', {
           instance: this.dataSource,
-          token: 'DataSource'
+          token: 'DataSource',
         });
       }
     }
-    
+
     return app;
   }
 
@@ -71,12 +74,12 @@ export class TestUtils {
         console.warn('DataSource not available in app context');
       }
     }
-    
+
     if (!this.dataSource || !this.dataSource.isInitialized) {
       this.dataSource = getTestDataSource();
       await this.dataSource.initialize();
     }
-    
+
     return this.dataSource;
   }
 
@@ -101,9 +104,12 @@ export class TestUtils {
   /**
    * Create test data for a user
    */
-  static async createTestUser(app: INestApplication, userData: any = {}): Promise<any> {
+  static async createTestUser(
+    app: INestApplication,
+    userData: any = {},
+  ): Promise<any> {
     const dataSource = await this.getDataSource(app);
-    
+
     // Generate a properly formatted firebaseId if not provided
     // This ensures the firebaseId matches what JwtGuard expects for test tokens
     if (!userData.firebaseId && userData.id) {
@@ -111,7 +117,7 @@ export class TestUtils {
     } else if (!userData.firebaseId) {
       userData.firebaseId = 'test_firebase_id';
     }
-    
+
     const defaultData = {
       fullname: 'Test User',
       avatarUrl: 'https://example.com/avatar.jpg',
@@ -125,16 +131,25 @@ export class TestUtils {
 
     const data = { ...defaultData, ...userData };
 
-    const result = await dataSource.query(`
+    const result = await dataSource.query(
+      `
       INSERT INTO "user" (
         "fullname", "avatarUrl", "coverUrl", "bio", "birthday", "gender", "firebaseId", "friendCount"
       ) VALUES (
         $1, $2, $3, $4, $5, $6, $7, $8
       ) RETURNING *
-    `, [
-      data.fullname, data.avatarUrl, data.coverUrl, data.bio, 
-      data.birthday, data.gender, data.firebaseId, data.friendCount
-    ]);
+    `,
+      [
+        data.fullname,
+        data.avatarUrl,
+        data.coverUrl,
+        data.bio,
+        data.birthday,
+        data.gender,
+        data.firebaseId,
+        data.friendCount,
+      ],
+    );
 
     return result[0];
   }
@@ -142,7 +157,10 @@ export class TestUtils {
   /**
    * Create a test post
    */
-  static async createTestPost(app: INestApplication, postData: any = {}): Promise<any> {
+  static async createTestPost(
+    app: INestApplication,
+    postData: any = {},
+  ): Promise<any> {
     const dataSource = await this.getDataSource(app);
     const defaultData = {
       text: 'Test post content',
@@ -153,13 +171,16 @@ export class TestUtils {
 
     const data = { ...defaultData, ...postData };
 
-    const result = await dataSource.query(`
+    const result = await dataSource.query(
+      `
       INSERT INTO "post" (
         "text", "privacy", "userId", "location"
       ) VALUES (
         $1, $2, $3, $4
       ) RETURNING *
-    `, [data.text, data.privacy, data.userId, data.location]);
+    `,
+      [data.text, data.privacy, data.userId, data.location],
+    );
 
     return result[0];
   }
@@ -167,7 +188,10 @@ export class TestUtils {
   /**
    * Create a test comment
    */
-  static async createTestComment(app: INestApplication, commentData: any = {}): Promise<any> {
+  static async createTestComment(
+    app: INestApplication,
+    commentData: any = {},
+  ): Promise<any> {
     const dataSource = await this.getDataSource(app);
     const defaultData = {
       userId: 1,
@@ -178,13 +202,16 @@ export class TestUtils {
 
     const data = { ...defaultData, ...commentData };
 
-    const result = await dataSource.query(`
+    const result = await dataSource.query(
+      `
       INSERT INTO "post_comment" (
         "userId", "postId", "text", "replyCommentId"
       ) VALUES (
         $1, $2, $3, $4
       ) RETURNING *
-    `, [data.userId, data.postId, data.text, data.replyCommentId]);
+    `,
+      [data.userId, data.postId, data.text, data.replyCommentId],
+    );
 
     return result[0];
   }

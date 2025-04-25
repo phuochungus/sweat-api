@@ -10,7 +10,7 @@ export class FilterNotificationDto extends GenericFilter {
   @ApiPropertyOptional({
     description: 'Filter by notification status',
     enum: NotificationStatus,
-    example: NotificationStatus.UNREAD
+    example: NotificationStatus.UNREAD,
   })
   @IsEnum(NotificationStatus)
   @IsOptional()

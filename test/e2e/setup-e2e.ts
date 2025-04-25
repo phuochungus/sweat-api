@@ -11,7 +11,7 @@ import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConne
  */
 async function setupE2E() {
   console.log('🔧 Setting up E2E test environment...');
-  
+
   const config = testConfig();
   const dbConfig = config.database as PostgresConnectionOptions;
   const firebaseConfig = config.firebase;
@@ -22,11 +22,13 @@ async function setupE2E() {
       const app = admin.initializeApp({
         projectId: firebaseConfig.emulatorProjectId,
       });
-      
+
       if (firebaseConfig.useEmulator) {
         // Point to the Firebase emulator
         process.env.FIREBASE_AUTH_EMULATOR_HOST = `${firebaseConfig.emulatorHost}:${firebaseConfig.emulatorPort}`;
-        console.log(`✅ Firebase auth emulator configured at ${process.env.FIREBASE_AUTH_EMULATOR_HOST}`);
+        console.log(
+          `✅ Firebase auth emulator configured at ${process.env.FIREBASE_AUTH_EMULATOR_HOST}`,
+        );
       }
     }
     console.log('✅ Firebase setup complete');
@@ -51,18 +53,18 @@ async function setupE2E() {
       synchronize: true,
       dropSchema: true,
     } as PostgresConnectionOptions);
-    
+
     // Initialize the connection
     await dataSource.initialize();
     console.log('✅ Test database connection established');
-    
+
     // Drop schema if exists and recreate it
     console.log('🗑️ Dropping and recreating database schema...');
     await dataSource.dropDatabase();
     await dataSource.synchronize();
-    
+
     console.log('✅ Test database setup complete');
-    
+
     // Close the connection when done
     await dataSource.destroy();
   } catch (error) {
@@ -80,7 +82,7 @@ async function setupE2E() {
 export function getTestDataSource(): DataSource {
   const config = testConfig();
   const dbConfig = config.database as unknown as PostgresConnectionOptions;
-  
+
   return new DataSource({
     type: dbConfig.type,
     host: dbConfig.host,

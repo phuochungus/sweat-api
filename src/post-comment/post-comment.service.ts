@@ -24,7 +24,7 @@ export class PostCommentService {
 
   async create(createPostCommentDto: CreatePostCommentDto, { currentUserId }) {
     const { postId, replyCommentId, text } = createPostCommentDto;
-    
+
     // Verify the post exists
     const post = await this.postRepository.findOne({
       where: {
@@ -32,7 +32,7 @@ export class PostCommentService {
       },
       relations: ['user'],
     });
-    
+
     if (!post) {
       throw new NotFoundException(`Post with id ${postId} not found`);
     }
@@ -45,9 +45,11 @@ export class PostCommentService {
         },
         relations: ['user'],
       });
-      
+
       if (!parentComment) {
-        throw new NotFoundException(`Parent comment with id ${replyCommentId} not found`);
+        throw new NotFoundException(
+          `Parent comment with id ${replyCommentId} not found`,
+        );
       }
     }
 
@@ -59,9 +61,9 @@ export class PostCommentService {
         text,
         replyCommentId,
       });
-      
+
       await manager.save(comment);
-      
+
       // Increment post comment count
       await manager
         .createQueryBuilder()
@@ -71,7 +73,7 @@ export class PostCommentService {
         })
         .where('id = :id', { id: postId })
         .execute();
-      
+
       // If it's a reply, increment the parent comment's reply count
       if (replyCommentId) {
         await manager
@@ -88,7 +90,7 @@ export class PostCommentService {
       const currentUser = await manager.findOne(User, {
         where: { id: currentUserId },
       });
-      
+
       // Notify post author if the commenter is not the post author
       if (post.userId !== currentUserId) {
         await manager.save(
@@ -96,18 +98,20 @@ export class PostCommentService {
             receiverUserId: post.userId,
             senderUserId: currentUserId,
             postId,
-            text: TEMPLATE.COMMENT.replace('<n>', currentUser.fullname)
-              .replace('<content>', text.substring(0, 30) + (text.length > 30 ? '...' : '')),
+            text: TEMPLATE.COMMENT.replace('<n>', currentUser.fullname).replace(
+              '<content>',
+              text.substring(0, 30) + (text.length > 30 ? '...' : ''),
+            ),
             status: NotificationStatus.UNREAD,
             type: SOCIAL.COMMENT,
           }),
         );
       }
-      
+
       // If it's a reply, also notify the parent comment author if different from commenter and post author
       if (
-        replyCommentId && 
-        parentComment.userId !== currentUserId && 
+        replyCommentId &&
+        parentComment.userId !== currentUserId &&
         parentComment.userId !== post.userId
       ) {
         await manager.save(
@@ -115,8 +119,10 @@ export class PostCommentService {
             receiverUserId: parentComment.userId,
             senderUserId: currentUserId,
             postId,
-            text: TEMPLATE.COMMENT.replace('<n>', currentUser.fullname)
-              .replace('<content>', text.substring(0, 30) + (text.length > 30 ? '...' : '')),
+            text: TEMPLATE.COMMENT.replace('<n>', currentUser.fullname).replace(
+              '<content>',
+              text.substring(0, 30) + (text.length > 30 ? '...' : ''),
+            ),
             status: NotificationStatus.UNREAD,
             type: SOCIAL.REPLY,
           }),
@@ -129,24 +135,27 @@ export class PostCommentService {
 
   async findAll(filterDto: FilterPostCommentDto, { currentUserId }) {
     const { page, take, postId, replyCommentId, includes } = filterDto;
-    
-    const queryBuilder = this.dataSource.createQueryBuilder(PostComment, 'comment')
+
+    const queryBuilder = this.dataSource
+      .createQueryBuilder(PostComment, 'comment')
       .leftJoinAndSelect('comment.user', 'user');
-    
+
     if (postId) {
       queryBuilder.andWhere('comment.postId = :postId', { postId });
     }
-    
+
     if (replyCommentId !== undefined) {
       if (replyCommentId === null) {
         queryBuilder.andWhere('comment.replyCommentId IS NULL');
       } else {
-        queryBuilder.andWhere('comment.replyCommentId = :replyCommentId', { replyCommentId });
+        queryBuilder.andWhere('comment.replyCommentId = :replyCommentId', {
+          replyCommentId,
+        });
       }
     }
-    
+
     queryBuilder.orderBy('comment.createdAt', 'DESC');
-    
+
     const [items, itemCount] = await Promise.all([
       queryBuilder
         .take(take)
@@ -154,19 +163,22 @@ export class PostCommentService {
         .getMany(),
       queryBuilder.getCount(),
     ]);
-    
+
     // Check if user has reacted to the comments if requested
     if (includes?.includes('isReacted') && currentUserId) {
       for (const comment of items) {
-        comment['isReacted'] = await this.isUserReactedToComment(currentUserId, comment.id);
+        comment['isReacted'] = await this.isUserReactedToComment(
+          currentUserId,
+          comment.id,
+        );
       }
     }
-    
+
     const pageMetaDto = new PageMetaDto({
       itemCount,
       pageOptionsDto: { page, take },
     });
-    
+
     return new PageDto(items, pageMetaDto);
   }
 
@@ -175,27 +187,33 @@ export class PostCommentService {
       where: { id },
       relations: ['user'],
     });
-    
+
     if (!comment) {
       throw new NotFoundException(`Comment with ID ${id} not found`);
     }
-    
+
     return comment;
   }
 
-  async update(id: number, updatePostCommentDto: UpdatePostCommentDto, { currentUserId }) {
+  async update(
+    id: number,
+    updatePostCommentDto: UpdatePostCommentDto,
+    { currentUserId },
+  ) {
     const comment = await this.postCommentRepository.findOne({
       where: { id },
     });
-    
+
     if (!comment) {
       throw new NotFoundException(`Comment with ID ${id} not found`);
     }
-    
+
     if (comment.userId !== currentUserId) {
-      throw new NotFoundException('You are not authorized to update this comment');
+      throw new NotFoundException(
+        'You are not authorized to update this comment',
+      );
     }
-    
+
     await this.postCommentRepository.update(id, updatePostCommentDto);
     return this.findOne(id);
   }
@@ -205,34 +223,37 @@ export class PostCommentService {
       where: { id },
       relations: ['replies'],
     });
-    
+
     if (!comment) {
       throw new NotFoundException(`Comment with ID ${id} not found`);
     }
-    
+
     if (comment.userId !== currentUserId) {
-      throw new NotFoundException('You are not authorized to delete this comment');
+      throw new NotFoundException(
+        'You are not authorized to delete this comment',
+      );
     }
-    
+
     return this.dataSource.transaction(async (manager) => {
       // If the comment has replies, delete them as well
       if (comment.replies && comment.replies.length > 0) {
         await manager.delete(PostComment, { replyCommentId: id });
       }
-      
+
       // Delete the comment itself
       await manager.delete(PostComment, id);
-      
+
       // Update the post's comment count
       await manager
         .createQueryBuilder()
         .update(Post)
         .set({
-          commentCount: () => `GREATEST(commentCount - ${1 + (comment.replies?.length || 0)}, 0)`,
+          commentCount: () =>
+            `GREATEST(commentCount - ${1 + (comment.replies?.length || 0)}, 0)`,
         })
         .where('id = :id', { id: comment.postId })
         .execute();
-      
+
       // If it's a reply, update the parent comment's reply count
       if (comment.replyCommentId) {
         await manager
@@ -244,11 +265,11 @@ export class PostCommentService {
           .where('id = :id', { id: comment.replyCommentId })
           .execute();
       }
-      
+
       return { success: true };
     });
   }
-  
+
   private async isUserReactedToComment(userId: number, commentId: number) {
     const query = await this.dataSource
       .createQueryBuilder()
@@ -257,7 +278,7 @@ export class PostCommentService {
       .where('pr.userId = :userId', { userId })
       .andWhere('pr.commentId = :commentId', { commentId })
       .getRawOne();
-    
+
     return !!query;
   }
 }

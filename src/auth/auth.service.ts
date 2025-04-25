@@ -33,7 +33,7 @@ export class AuthService {
         // Verify the Firebase token in normal mode
         const decodedToken = await admin.auth().verifyIdToken(token);
         firebaseId = decodedToken.uid;
-        
+
         // Get user details from Firebase
         const firebaseUser = await admin.auth().getUser(firebaseId);
         displayName = firebaseUser.displayName || 'New User';

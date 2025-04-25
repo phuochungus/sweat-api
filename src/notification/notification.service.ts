@@ -11,9 +11,12 @@ import { NotificationStatus } from 'src/common/enums';
 export class NotificationService {
   constructor(private readonly dataSource: DataSource) {}
 
-  async getAll(filterNotificationDto: FilterNotificationDto, { currentUserId }) {
+  async getAll(
+    filterNotificationDto: FilterNotificationDto,
+    { currentUserId },
+  ) {
     const { page = 1, take = 10, status } = filterNotificationDto;
-    
+
     const queryBuilder = this.dataSource
       .createQueryBuilder()
       .select('un.*')
@@ -63,13 +66,15 @@ export class NotificationService {
 
   async batchUpdate(updateDto: UpdateNotificationDto, { currentUserId }) {
     const { ids, status } = updateDto;
-    
+
     await this.dataSource
       .createQueryBuilder()
       .update('user_notification')
       .set({ status })
       .where('id IN (:...ids)', { ids })
-      .andWhere('receiverUserId = :receiverUserId', { receiverUserId: currentUserId })
+      .andWhere('receiverUserId = :receiverUserId', {
+        receiverUserId: currentUserId,
+      })
       .execute();
 
     return { updated: true };
