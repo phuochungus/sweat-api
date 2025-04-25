@@ -2,24 +2,30 @@ import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { User } from './user.entity';
 import { ReactType } from 'src/common/enums';
-import { Post } from 'src/entities/post.entity';
-import { PostComment } from 'src/entities/post-comment.entity';
+import { Post } from './post.entity';
+import { PostComment } from './post-comment.entity';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 @Entity('post_react')
-export class React extends BaseEntity {
+export class PostReact extends BaseEntity {
+  @ApiProperty({ enum: ReactType })
   @Column({ type: 'enum', enum: ReactType })
   type!: ReactType;
 
+  @ApiProperty()
   @Column()
   userId!: number;
 
+  @ApiPropertyOptional()
   @Column({ nullable: true })
   commentId?: number;
 
+  @ApiPropertyOptional()
   @Column({ nullable: true })
   postId?: number;
 
   @ManyToOne(() => User)
+  @JoinColumn({ name: 'userId' })
   user: User;
 
   @ManyToOne(() => Post, { nullable: true })

@@ -1,33 +1,40 @@
-import { ExceptionFilter, Catch, ArgumentsHost, Logger } from '@nestjs/common';
-import { Response } from 'express';
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
+import { Request, Response } from 'express';
 
-@Catch()
+@Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
-  private readonly logger = new Logger(HttpExceptionFilter.name);
-
-  catch(exception: any, host: ArgumentsHost) {
+  catch(exception: HttpException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const isDev = process.env.NODE_ENV === 'dev';
-    const statusCode = exception?.status || 500;
-    const message = exception?.message || 'Internal server error';
+    const request = ctx.getRequest<Request>();
+    
+    const status = exception.getStatus();
+    const exceptionResponse = exception.getResponse();
 
-    const responseBody = {
-      statusCode,
-      message,
+    const errorResponse = {
+      statusCode: status,
+      timestamp: new Date().toISOString(),
+      path: request.url,
+      method: request.method,
+      message: typeof exceptionResponse === 'string' 
+        ? exceptionResponse 
+        : (exceptionResponse as Record<string, any>).message || exception.message,
     };
 
-    if (isDev && statusCode == 500) {
-      (responseBody as any).error_stack = JSON.stringify(
-        exception,
-        Object.getOwnPropertyNames(exception),
-      );
+    // Add validation errors if they exist
+    if (
+      typeof exceptionResponse === 'object' && 
+      (exceptionResponse as Record<string, any>).errors
+    ) {
+      errorResponse['errors'] = (exceptionResponse as Record<string, any>).errors;
     }
 
-    if (statusCode == 500) {
-      this.logger.error(exception);
-    }
-
-    response.status(statusCode).json(responseBody);
+    response.status(status).json(errorResponse);
   }
 }

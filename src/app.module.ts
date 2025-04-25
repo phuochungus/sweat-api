@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import configuration from 'src/config/configuration';
+import testConfiguration from 'src/config/test-configuration';
 import { AwsModule } from 'src/aws/aws.module';
 import { PostModule } from './post/post.module';
 import { PostMediaModule } from './post-media/post-media.module';
@@ -14,11 +15,15 @@ import { FriendModule } from './friend/friend.module';
 import { FriendRequestModule } from 'src/friend-request/friend-request.module';
 import { NotificationModule } from 'src/notification/notification.module';
 import { PostCommentModule } from './post-comment/post-comment.module';
+import { AuthModule } from './auth/auth.module';
+import { PostReactModule } from './post-react/post-react.module';
+import { HealthModule } from './health/health.module';
+import { DataSource } from 'typeorm';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [configuration],
+      load: [process.env.NODE_ENV === 'test' ? testConfiguration : configuration],
       isGlobal: true,
     }),
     ScheduleModule.forRoot(),
@@ -34,16 +39,27 @@ import { PostCommentModule } from './post-comment/post-comment.module';
       inject: [ConfigService],
     }),
     AwsModule,
+    AuthModule,
     PostModule,
     PostMediaModule,
+    PostReactModule,
     UserModule,
     UserSettingModule,
     FriendRequestModule,
     NotificationModule,
     FriendModule,
     PostCommentModule,
+    HealthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: 'DataSource',
+      useFactory: (connection: DataSource) => connection,
+      inject: [DataSource],
+    },
+  ],
+  exports: ['DataSource'],
 })
 export class AppModule {}

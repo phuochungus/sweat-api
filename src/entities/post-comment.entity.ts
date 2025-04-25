@@ -1,6 +1,6 @@
 import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
-import { Post, React, User } from 'src/entities';
+import { Post, PostReact, User } from 'src/entities';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('post_comment')
@@ -29,8 +29,8 @@ export class PostComment extends BaseEntity {
   @Column({ default: 0 })
   reactCount!: number;
 
-  @OneToMany(() => React, (react) => react.postComment)
-  react: React[];
+  @OneToMany(() => PostReact, (react) => react.postComment)
+  react: PostReact[];
 
   @OneToMany(() => PostComment, (comment) => comment.replyCommentId)
   @JoinColumn({ name: 'replyCommentId' })

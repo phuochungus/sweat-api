@@ -5,5 +5,19 @@
   "testRegex": ".e2e-spec.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "^src/(.*)$": "<rootDir>/../src/$1"
+  },
+  "moduleDirectories": ["<rootDir>/../", "node_modules"],
+  "setupFilesAfterEnv": ["<rootDir>/e2e/setup-e2e.ts"],
+  "testTimeout": 20000,
+  "testPathIgnorePatterns": ["/node_modules/"],
+  "collectCoverage": false,
+  "globals": {
+    "NODE_ENV": "test",
+    "TS_JEST": {
+      "isolatedModules": true
+    }
   }
 }

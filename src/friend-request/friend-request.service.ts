@@ -64,8 +64,6 @@ export class FriendRequestService {
       })
       .execute();
 
-    //todo: send notification to receiver
-
     await this.dataSource
       .createQueryBuilder(UserNotification, 'un')
       .insert()
@@ -74,7 +72,7 @@ export class FriendRequestService {
           receiverUserId,
           senderUserId,
           text: TEMPLATE.CREATE_FRIEND_REQUEST.replace(
-            '<name>',
+            '<n>',
             senderUser.fullname,
           ),
           status: NotificationStatus.UNREAD,

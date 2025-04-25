@@ -36,6 +36,12 @@ export class PostController {
     return this.postService.findAll(q, { currentUserId: user_id });
   }
 
+  @Get('feed')
+  @ApiResponse({ type: PageDto })
+  async getFeed(@User('id') userId: number, @Query() q: FilterPostsDto) {
+    return this.postService.getFeed(userId, q);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.postService.findOne(+id);
@@ -49,12 +55,6 @@ export class PostController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.postService.remove(+id);
-  }
-
-  @Get('feed')
-  @ApiResponse({ type: PageDto })
-  async getFeed(@User('id') userId: number, @Query() q: FilterPostsDto) {
-    return this.postService.getFeed(userId, q);
   }
 
   @Post(':id/likes')

@@ -11,7 +11,7 @@ export enum PostPrivacy {
   PUBLIC = 'PUBLIC',
 }
 export enum ReactType {
-  HEART = 'HEART',
+  LIKE = 'LIKE',
 }
 export enum UserGender {
   MALE = 'MALE',
@@ -39,3 +39,8 @@ export enum TYPE_UPLOAD {
 }
 
 export * from './country';
+export * from './friend-request-status.enum';
+export * from './notification-status.enum';
+export * from './post-privacy.enum';
+export * from './react-type.enum';
+export * from './user-gender.enum';

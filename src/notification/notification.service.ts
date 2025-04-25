@@ -5,49 +5,73 @@ import { UserNotification } from 'src/entities';
 import { FilterNotificationDto } from 'src/notification/dto/filter-notification.dto';
 import { UpdateNotificationDto } from 'src/notification/dto/update-notification.dto';
 import { DataSource } from 'typeorm';
+import { NotificationStatus } from 'src/common/enums';
 
 @Injectable()
 export class NotificationService {
   constructor(private readonly dataSource: DataSource) {}
 
-  async getAll(filterDto: FilterNotificationDto, { currentUserId }) {
-    if (filterDto.userId !== currentUserId) {
-      throw new ForbiddenException('Forbidden');
+  async getAll(filterNotificationDto: FilterNotificationDto, { currentUserId }) {
+    const { page = 1, take = 10, status } = filterNotificationDto;
+    
+    const queryBuilder = this.dataSource
+      .createQueryBuilder()
+      .select('un.*')
+      .addSelect('u.fullname', 'senderFullname')
+      .addSelect('u.avatarUrl', 'senderAvatarUrl')
+      .from('user_notification', 'un')
+      .leftJoin('user', 'u', 'un.senderUserId = u.id')
+      .where('un.receiverUserId = :receiverUserId', {
+        receiverUserId: currentUserId,
+      });
+
+    if (status) {
+      queryBuilder.andWhere('un.status = :status', { status });
     }
 
-    const { page, take, userId } = filterDto;
-    const skip = (page - 1) * take;
+    queryBuilder
+      .orderBy('un.createdAt', 'DESC')
+      .limit(take)
+      .offset((page - 1) * take);
 
-    const queryBuilder = this.dataSource
-      .createQueryBuilder(UserNotification, 'un')
-      .where('un.userId = :userId', { userId });
-
-    const [item, itemCount] = await Promise.all([
-      queryBuilder
-        .orderBy('un.createdAt', 'DESC')
-        .skip(skip)
-        .take(take)
-        .getMany(),
+    const [items, itemCount] = await Promise.all([
+      queryBuilder.getRawMany(),
       queryBuilder.getCount(),
     ]);
 
-    const pageDto = new PageMetaDto({
+    const unreadCount = await this.dataSource
+      .createQueryBuilder()
+      .select()
+      .from('user_notification', 'un')
+      .where('un.receiverUserId = :receiverUserId', {
+        receiverUserId: currentUserId,
+      })
+      .andWhere('un.status = :status', { status: NotificationStatus.UNREAD })
+      .getCount();
+
+    const pageMetaDto = new PageMetaDto({
       itemCount,
       pageOptionsDto: { page, take },
     });
 
-    return new PageDto(item, pageDto);
+    return {
+      data: items,
+      meta: pageMetaDto,
+      unreadCount,
+    };
   }
 
   async batchUpdate(updateDto: UpdateNotificationDto, { currentUserId }) {
-    return await this.dataSource
-      .createQueryBuilder(UserNotification, 'un')
-      .update(UserNotification)
-      .set(updateDto)
-      .where('un.userId = :currentUserId AND un.id IN :ids', {
-        currentUserId,
-        ids: updateDto.ids,
-      })
+    const { ids, status } = updateDto;
+    
+    await this.dataSource
+      .createQueryBuilder()
+      .update('user_notification')
+      .set({ status })
+      .where('id IN (:...ids)', { ids })
+      .andWhere('receiverUserId = :receiverUserId', { receiverUserId: currentUserId })
       .execute();
+
+    return { updated: true };
   }
 }

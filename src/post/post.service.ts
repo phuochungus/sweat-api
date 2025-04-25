@@ -6,7 +6,7 @@ import { Post } from 'src/entities/post.entity';
 import { DataSource, Repository } from 'typeorm';
 import { FilterPostsDto } from 'src/post/dto/filter-posts.dto';
 import { PageDto, PageMetaDto } from 'src/common/dto';
-import { PostMedia, React, UserFriend } from 'src/entities';
+import { PostMedia, PostReact, UserFriend } from 'src/entities';
 import { ReactType } from 'src/common/enums';
 import { FilterLikeDto } from 'src/post/dto/filter-like.dto';
 
@@ -139,7 +139,7 @@ export class PostService {
         .values({
           userId,
           postId,
-          type: ReactType.HEART,
+          type: ReactType.LIKE,
         })
         .execute();
 
@@ -185,10 +185,10 @@ export class PostService {
 
   async getLikes({ postId, page, take }: FilterLikeDto & { postId: number }) {
     const queryBuilder = this.dataSource
-      .createQueryBuilder(React, 'react')
+      .createQueryBuilder(PostReact, 'react')
       .leftJoinAndSelect('react.user', 'user')
       .where('react.postId = :postId', { postId })
-      .andWhere('react.type = :type', { type: ReactType.HEART })
+      .andWhere('react.type = :type', { type: ReactType.LIKE })
       .orderBy('react.createdAt', 'DESC');
 
     const [items, itemCount] = await Promise.all([
@@ -209,7 +209,7 @@ export class PostService {
 
   private async isUserReactedToPost(userId: number, postId: number) {
     const query = await this.dataSource
-      .createQueryBuilder(React, 'react')
+      .createQueryBuilder(PostReact, 'react')
       .where('react.userId = :userId', { userId })
       .andWhere('react.postId = :postId', { postId })
       .getOne();
