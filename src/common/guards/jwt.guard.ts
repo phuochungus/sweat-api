@@ -53,22 +53,24 @@ export class JwtGuard implements CanActivate {
         // In test mode, extract user ID from the token
         const parts = token.split('_');
         const testUserId = parts[parts.length - 1];
-        
+
         // Look up the user directly by ID first
         const userById = await this.userRepository.findOne({
           where: { id: parseInt(testUserId) },
         });
-        
+
         if (userById) {
           // Use the existing user
           request.user = userById;
           return true;
         }
-        
+
         // For backward compatibility, try the firebase ID format
         userId = `test_firebase_id_${testUserId}`;
 
-        console.log(`Test token parsed. Using ID: ${testUserId}, looking for firebaseId: ${userId}`);
+        console.log(
+          `Test token parsed. Using ID: ${testUserId}, looking for firebaseId: ${userId}`,
+        );
       } else {
         // Normal firebase token verification
         console.log('Verifying Firebase token...');

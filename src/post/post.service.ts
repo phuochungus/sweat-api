@@ -35,12 +35,12 @@ export class PostService {
 
   async findAll(filterPostDto: FilterPostsDto, { currentUserId }) {
     const { createdBy, page = 1, take = 10, includes } = filterPostDto;
-    
+
     // Ensure page and take are numbers
     const pageNum = Number(page);
     const takeNum = Number(take);
     const skip = (pageNum - 1) * takeNum;
-    
+
     const queryBuilder = this.dataSource.createQueryBuilder(Post, 'post');
 
     if (createdBy) {
@@ -48,10 +48,7 @@ export class PostService {
     }
 
     let [item, itemCount] = await Promise.all([
-      queryBuilder
-        .take(takeNum)
-        .skip(skip)
-        .getMany(),
+      queryBuilder.take(takeNum).skip(skip).getMany(),
       queryBuilder.getCount(),
     ]);
 
@@ -90,18 +87,18 @@ export class PostService {
 
   async update(id: number, updatePostDto: UpdatePostDto) {
     const post = await this.postRepository.findOne({
-      where: { id }
+      where: { id },
     });
-    
+
     if (!post) {
       throw new NotFoundException(`Post with ID ${id} not found`);
     }
-    
+
     await this.postRepository.update(id, updatePostDto);
-    
+
     // Return the updated post
     return this.postRepository.findOne({
-      where: { id }
+      where: { id },
     });
   }
 
@@ -137,10 +134,7 @@ export class PostService {
       .orderBy('post.createdAt', 'DESC');
 
     const [items, itemCount] = await Promise.all([
-      queryBuilder
-        .take(takeNum)
-        .skip(skip)
-        .getMany(),
+      queryBuilder.take(takeNum).skip(skip).getMany(),
       queryBuilder.getCount(),
     ]);
 
@@ -184,9 +178,9 @@ export class PostService {
     });
 
     // Return an object with success status
-    return { 
+    return {
       success: true,
-      message: 'Post liked successfully'
+      message: 'Post liked successfully',
     };
   }
 
@@ -217,11 +211,11 @@ export class PostService {
         .where('id = :id', { id: postId })
         .execute();
     });
-    
+
     // Return an object with success status
-    return { 
+    return {
       success: true,
-      message: 'Post unliked successfully'
+      message: 'Post unliked successfully',
     };
   }
 
@@ -243,10 +237,7 @@ export class PostService {
       .orderBy('react.createdAt', 'DESC');
 
     const [items, itemCount] = await Promise.all([
-      queryBuilder
-        .take(takeNum)
-        .skip(skip)
-        .getMany(),
+      queryBuilder.take(takeNum).skip(skip).getMany(),
       queryBuilder.getCount(),
     ]);
 

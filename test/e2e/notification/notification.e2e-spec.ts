@@ -122,7 +122,7 @@ describe('Notification (e2e)', () => {
       // Meta object should include pagination info
       expect(page1Response.body.meta).toBeDefined();
       expect(page1Response.body.meta.itemCount).toBeDefined();
-      expect(page1Response.body.meta.totalPages).toBeDefined();
+      expect(page1Response.body.meta.pageCount).toBeDefined();
     });
   });
 

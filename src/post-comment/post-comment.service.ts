@@ -129,7 +129,7 @@ export class PostCommentService {
         );
       }
 
-      // Get the full comment with the user information 
+      // Get the full comment with the user information
       const fullComment = await manager.findOne(PostComment, {
         where: { id: savedComment.id },
         relations: ['user'],
@@ -138,7 +138,7 @@ export class PostCommentService {
       // Make sure the user ID is correct in the returned object
       return {
         ...fullComment,
-        userId: currentUserId  // This ensures the expected user ID is returned
+        userId: currentUserId, // This ensures the expected user ID is returned
       };
     });
   }
@@ -163,8 +163,9 @@ export class PostCommentService {
       // Handle empty string or null for replyCommentId
       // Convert to string first to safely check for empty string
       const replyCommentIdStr = String(replyCommentId);
-      const processedReplyCommentId = replyCommentIdStr === '' ? null : replyCommentId;
-      
+      const processedReplyCommentId =
+        replyCommentIdStr === '' ? null : replyCommentId;
+
       if (processedReplyCommentId === null) {
         queryBuilder.andWhere('comment.replyCommentId IS NULL');
       } else {
@@ -177,10 +178,7 @@ export class PostCommentService {
     queryBuilder.orderBy('comment.createdAt', 'DESC');
 
     const [items, itemCount] = await Promise.all([
-      queryBuilder
-        .take(takeNum)
-        .skip(skip)
-        .getMany(),
+      queryBuilder.take(takeNum).skip(skip).getMany(),
       queryBuilder.getCount(),
     ]);
 
@@ -241,7 +239,7 @@ export class PostCommentService {
   async remove(id: number, { currentUserId }) {
     // First check if the comment exists
     const comment = await this.postCommentRepository.findOne({
-      where: { id }
+      where: { id },
     });
 
     if (!comment) {
@@ -257,7 +255,7 @@ export class PostCommentService {
 
     // Check for replies
     const replies = await this.postCommentRepository.find({
-      where: { replyCommentId: id }
+      where: { replyCommentId: id },
     });
 
     return this.dataSource.transaction(async (manager) => {
