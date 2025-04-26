@@ -62,7 +62,7 @@ export class FriendRequestController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userFriendRequestService.remove(+id);
+  remove(@Param('id') id: string, @User('id') userId: number) {
+    return this.userFriendRequestService.remove(+id, { currentUserId: userId });
   }
 }

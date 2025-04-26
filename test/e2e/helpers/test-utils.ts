@@ -110,12 +110,13 @@ export class TestUtils {
   ): Promise<any> {
     const dataSource = await this.getDataSource(app);
 
-    // Generate a properly formatted firebaseId if not provided
-    // This ensures the firebaseId matches what JwtGuard expects for test tokens
-    if (!userData.firebaseId && userData.id) {
+    // If the user doesn't have a firebaseId but we're assigning an ID,
+    // format it consistently for test tokens
+    if (!userData.firebaseId) {
+      // Create a random ID if one isn't provided
+      const randomId = Math.floor(Math.random() * 1000);
+      userData.id = userData.id || randomId;
       userData.firebaseId = `test_firebase_id_${userData.id}`;
-    } else if (!userData.firebaseId) {
-      userData.firebaseId = 'test_firebase_id';
     }
 
     const defaultData = {

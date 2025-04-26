@@ -31,31 +31,64 @@ export class FriendRequestService {
     { currentUserId },
   ) {
     const { receiverUserId, senderUserId } = createUserFriendRequestDto;
+
     if (receiverUserId === senderUserId) {
       throw new ForbiddenException(
         'You cannot send friend request to yourself',
       );
     }
+
     if (currentUserId !== senderUserId) {
       throw new ForbiddenException('You are not allowed to send this request');
     }
+
     const senderUser = await this.dataSource
       .createQueryBuilder(User, 'u')
       .where('u.id = :id', { id: senderUserId })
       .getOne();
 
+    if (!senderUser) {
+      throw new NotFoundException('Sender user not found');
+    }
+
+    const receiverUser = await this.dataSource
+      .createQueryBuilder(User, 'u')
+      .where('u.id = :id', { id: receiverUserId })
+      .getOne();
+
+    if (!receiverUser) {
+      throw new NotFoundException('Receiver user not found');
+    }
+
+    // Check if already friends
     const areFriends = await this.friendService.areFriends(
       senderUserId,
       receiverUserId,
     );
+
     if (areFriends) {
       throw new ForbiddenException('Already friends');
     }
-    const queryBuilder = this.dataSource.createQueryBuilder(
-      UserFriendRequest,
-      'ufr',
-    );
-    queryBuilder
+
+    // Check for existing friend request
+    const existingRequest = await this.dataSource
+      .createQueryBuilder(UserFriendRequest, 'ufr')
+      .where(
+        '(ufr.senderUserId = :senderUserId AND ufr.receiverUserId = :receiverUserId) OR (ufr.senderUserId = :receiverUserId AND ufr.receiverUserId = :senderUserId)',
+        {
+          senderUserId,
+          receiverUserId,
+        },
+      )
+      .getOne();
+
+    if (existingRequest) {
+      throw new ForbiddenException('Friend request already exists');
+    }
+
+    // Create the friend request
+    const result = await this.dataSource
+      .createQueryBuilder(UserFriendRequest, 'ufr')
       .insert()
       .values({
         senderUserId,
@@ -64,6 +97,7 @@ export class FriendRequestService {
       })
       .execute();
 
+    // Create notification
     await this.dataSource
       .createQueryBuilder(UserNotification, 'un')
       .insert()
@@ -80,6 +114,15 @@ export class FriendRequestService {
         },
       ])
       .execute();
+
+    // Return the created friend request object
+    return {
+      id: result.identifiers[0].id,
+      senderUserId,
+      receiverUserId,
+      status: FriendRequestStatus.PENDING,
+      createdAt: new Date(),
+    };
   }
 
   async findAll(
@@ -87,8 +130,8 @@ export class FriendRequestService {
     { currentUserId },
   ) {
     const {
-      page,
-      take,
+      page = 1,
+      take = 10,
       receiverUserId,
       senderUserId,
       status,
@@ -96,6 +139,11 @@ export class FriendRequestService {
       query,
       withSenderMutualFriends,
     } = FilterFriendRequestDto;
+
+    // Ensure page and take are numbers
+    const pageNum = Number(page);
+    const takeNum = Number(take);
+
     const queryBuilder = this.dataSource.createQueryBuilder(
       UserFriendRequest,
       'ufr',
@@ -125,11 +173,10 @@ export class FriendRequestService {
       });
     }
 
+    const skip = (pageNum - 1) * takeNum;
+
     let [item, itemCount] = await Promise.all([
-      queryBuilder
-        .skip((page - 1) * take)
-        .take(take)
-        .getMany(),
+      queryBuilder.skip(skip).take(takeNum).getMany(),
       queryBuilder.getCount(),
     ]);
 
@@ -147,17 +194,23 @@ export class FriendRequestService {
 
     const pageMetaDto = new PageMetaDto({
       itemCount,
-      pageOptionsDto: { page, take },
+      pageOptionsDto: { page: pageNum, take: takeNum },
     });
 
     return new PageDto(item, pageMetaDto);
   }
 
-  findOne(id: number) {
-    return this.dataSource
+  async findOne(id: number) {
+    const friendRequest = await this.dataSource
       .createQueryBuilder(UserFriendRequest, 'ufr')
       .where('ufr.id = :id', { id })
       .getOne();
+
+    if (!friendRequest) {
+      throw new NotFoundException(`Friend request with ID ${id} not found`);
+    }
+
+    return friendRequest;
   }
 
   async update(
@@ -225,25 +278,68 @@ export class FriendRequestService {
         .set({
           friendCount: () => 'friendCount + 1',
         })
-        .where('id IN (:ids)', {
+        .where('id IN (:...ids)', {
           ids: [friendRequest.senderUserId, friendRequest.receiverUserId],
         })
         .execute();
+
+      return {
+        success: true,
+        message: 'Friend request accepted',
+        status: FriendRequestStatus.ACCEPTED,
+      };
     }
+
     if (status === FriendRequestStatus.REJECTED) {
       await this.dataSource
         .createQueryBuilder(UserFriendRequest, 'ufr')
         .delete()
         .where('id = :id', { id: friendRequestId })
         .execute();
+
+      return {
+        success: true,
+        message: 'Friend request rejected',
+        status: FriendRequestStatus.REJECTED,
+      };
     }
+
+    return {
+      success: true,
+      message: 'Friend request updated',
+      status: status,
+    };
   }
 
-  async remove(id: number) {
+  async remove(id: number, { currentUserId }) {
+    const friendRequest = await this.dataSource
+      .createQueryBuilder(UserFriendRequest, 'ufr')
+      .where('ufr.id = :id', { id })
+      .getOne();
+
+    if (!friendRequest) {
+      throw new NotFoundException(`Friend request with ID ${id} not found`);
+    }
+
+    // Check that the current user is either the sender or receiver
+    if (
+      friendRequest.senderUserId !== currentUserId &&
+      friendRequest.receiverUserId !== currentUserId
+    ) {
+      throw new ForbiddenException(
+        'You are not authorized to delete this friend request',
+      );
+    }
+
     await this.dataSource
       .createQueryBuilder(UserFriendRequest, 'ufr')
       .delete()
       .where('id = :id', { id })
       .execute();
+
+    return {
+      success: true,
+      message: 'Friend request deleted successfully',
+    };
   }
 }

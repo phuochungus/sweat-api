@@ -13,15 +13,15 @@ describe('FriendRequest (e2e)', () => {
     // Create the test app
     app = await TestUtils.createTestApp();
 
-    // Setup test users
+    // Setup test users with explicit IDs to ensure consistent auth tokens
     user1 = await TestUtils.createTestUser(app, {
+      id: 150,
       fullname: 'Friend Request Sender',
-      firebaseId: 'sender_firebase_id',
     });
 
     user2 = await TestUtils.createTestUser(app, {
+      id: 151,
       fullname: 'Friend Request Receiver',
-      firebaseId: 'receiver_firebase_id',
     });
   });
 
@@ -45,6 +45,7 @@ describe('FriendRequest (e2e)', () => {
         .set('Authorization', `Bearer ${TestUtils.getMockAuthToken(user1.id)}`)
         .send(newFriendRequest)
         .expect(201);
+      console.log(response.text);
 
       // The response might not include the created friend request directly
       // Let's check if a friend request exists between these users
@@ -264,11 +265,11 @@ describe('FriendRequest (e2e)', () => {
         [user1.id, user2.id, FriendRequestStatus.PENDING],
       );
 
-      const request = requestResult[0];
+      const friendRequestObj = requestResult[0];
 
       // User1 (sender) tries to accept the request (should fail)
       await request(app.getHttpServer())
-        .patch(`/friend-request/${request.id}`)
+        .patch(`/friend-request/${friendRequestObj.id}`)
         .set('Authorization', `Bearer ${TestUtils.getMockAuthToken(user1.id)}`)
         .send({ status: FriendRequestStatus.ACCEPTED })
         .expect(403);

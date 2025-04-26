@@ -34,17 +34,23 @@ export class PostService {
   }
 
   async findAll(filterPostDto: FilterPostsDto, { currentUserId }) {
-    const { createdBy, page, take, includes } = filterPostDto;
+    const { createdBy, page = 1, take = 10, includes } = filterPostDto;
+    
+    // Ensure page and take are numbers
+    const pageNum = Number(page);
+    const takeNum = Number(take);
+    const skip = (pageNum - 1) * takeNum;
+    
     const queryBuilder = this.dataSource.createQueryBuilder(Post, 'post');
 
     if (createdBy) {
-      queryBuilder.andWhere('post.createdBy = :createdBy', { createdBy });
+      queryBuilder.andWhere('post.userId = :userId', { userId: createdBy });
     }
 
     let [item, itemCount] = await Promise.all([
       queryBuilder
-        .take(take)
-        .skip((page - 1) * take)
+        .take(takeNum)
+        .skip(skip)
         .getMany(),
       queryBuilder.getCount(),
     ]);
@@ -60,13 +66,13 @@ export class PostService {
 
     const pageMetaDto = new PageMetaDto({
       itemCount,
-      pageOptionsDto: { page, take },
+      pageOptionsDto: { page: pageNum, take: takeNum },
     });
     return new PageDto(item, pageMetaDto);
   }
 
   async findOne(id: number) {
-    return await this.postRepository.findOne({
+    const post = await this.postRepository.findOne({
       where: {
         id,
       },
@@ -74,10 +80,29 @@ export class PostService {
         postMedia: true,
       },
     });
+
+    if (!post) {
+      throw new NotFoundException(`Post with ID ${id} not found`);
+    }
+
+    return post;
   }
 
   async update(id: number, updatePostDto: UpdatePostDto) {
-    return await this.postRepository.update(id, updatePostDto);
+    const post = await this.postRepository.findOne({
+      where: { id }
+    });
+    
+    if (!post) {
+      throw new NotFoundException(`Post with ID ${id} not found`);
+    }
+    
+    await this.postRepository.update(id, updatePostDto);
+    
+    // Return the updated post
+    return this.postRepository.findOne({
+      where: { id }
+    });
   }
 
   async remove(id: number) {
@@ -85,7 +110,12 @@ export class PostService {
   }
 
   async getFeed(userId: number, filterPostDto: FilterPostsDto) {
-    const { page, take } = filterPostDto;
+    const { page = 1, take = 10 } = filterPostDto;
+
+    // Ensure page and take are numbers
+    const pageNum = Number(page);
+    const takeNum = Number(take);
+    const skip = (pageNum - 1) * takeNum;
 
     // Get all friends of the user
     const friends = await this.friendRepository.find({
@@ -108,15 +138,15 @@ export class PostService {
 
     const [items, itemCount] = await Promise.all([
       queryBuilder
-        .take(take)
-        .skip((page - 1) * take)
+        .take(takeNum)
+        .skip(skip)
         .getMany(),
       queryBuilder.getCount(),
     ]);
 
     const pageMetaDto = new PageMetaDto({
       itemCount,
-      pageOptionsDto: { page, take },
+      pageOptionsDto: { page: pageNum, take: takeNum },
     });
 
     return new PageDto(items, pageMetaDto);
@@ -152,6 +182,12 @@ export class PostService {
         .where('id = :id', { id: postId })
         .execute();
     });
+
+    // Return an object with success status
+    return { 
+      success: true,
+      message: 'Post liked successfully'
+    };
   }
 
   async unlikePost(userId: number, postId: number) {
@@ -181,9 +217,24 @@ export class PostService {
         .where('id = :id', { id: postId })
         .execute();
     });
+    
+    // Return an object with success status
+    return { 
+      success: true,
+      message: 'Post unliked successfully'
+    };
   }
 
-  async getLikes({ postId, page, take }: FilterLikeDto & { postId: number }) {
+  async getLikes({
+    postId,
+    page = 1,
+    take = 20,
+  }: FilterLikeDto & { postId: number }) {
+    // Ensure page and take are numbers
+    const pageNum = Number(page);
+    const takeNum = Number(take);
+    const skip = (pageNum - 1) * takeNum;
+
     const queryBuilder = this.dataSource
       .createQueryBuilder(PostReact, 'react')
       .leftJoinAndSelect('react.user', 'user')
@@ -193,15 +244,15 @@ export class PostService {
 
     const [items, itemCount] = await Promise.all([
       queryBuilder
-        .take(take)
-        .skip((page - 1) * take)
+        .take(takeNum)
+        .skip(skip)
         .getMany(),
       queryBuilder.getCount(),
     ]);
 
     const pageMetaDto = new PageMetaDto({
       itemCount,
-      pageOptionsDto: { page, take },
+      pageOptionsDto: { page: pageNum, take: takeNum },
     });
 
     return new PageDto(items, pageMetaDto);

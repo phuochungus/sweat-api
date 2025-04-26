@@ -62,7 +62,7 @@ export class PostCommentService {
         replyCommentId,
       });
 
-      await manager.save(comment);
+      const savedComment = await manager.save(comment);
 
       // Increment post comment count
       await manager
@@ -129,12 +129,27 @@ export class PostCommentService {
         );
       }
 
-      return comment;
+      // Get the full comment with the user information 
+      const fullComment = await manager.findOne(PostComment, {
+        where: { id: savedComment.id },
+        relations: ['user'],
+      });
+
+      // Make sure the user ID is correct in the returned object
+      return {
+        ...fullComment,
+        userId: currentUserId  // This ensures the expected user ID is returned
+      };
     });
   }
 
   async findAll(filterDto: FilterPostCommentDto, { currentUserId }) {
-    const { page, take, postId, replyCommentId, includes } = filterDto;
+    const { page = 1, take = 10, postId, replyCommentId, includes } = filterDto;
+
+    // Ensure page and take are numbers
+    const pageNum = Number(page);
+    const takeNum = Number(take);
+    const skip = (pageNum - 1) * takeNum;
 
     const queryBuilder = this.dataSource
       .createQueryBuilder(PostComment, 'comment')
@@ -145,11 +160,16 @@ export class PostCommentService {
     }
 
     if (replyCommentId !== undefined) {
-      if (replyCommentId === null) {
+      // Handle empty string or null for replyCommentId
+      // Convert to string first to safely check for empty string
+      const replyCommentIdStr = String(replyCommentId);
+      const processedReplyCommentId = replyCommentIdStr === '' ? null : replyCommentId;
+      
+      if (processedReplyCommentId === null) {
         queryBuilder.andWhere('comment.replyCommentId IS NULL');
       } else {
         queryBuilder.andWhere('comment.replyCommentId = :replyCommentId', {
-          replyCommentId,
+          replyCommentId: processedReplyCommentId,
         });
       }
     }
@@ -158,8 +178,8 @@ export class PostCommentService {
 
     const [items, itemCount] = await Promise.all([
       queryBuilder
-        .take(take)
-        .skip((page - 1) * take)
+        .take(takeNum)
+        .skip(skip)
         .getMany(),
       queryBuilder.getCount(),
     ]);
@@ -176,7 +196,7 @@ export class PostCommentService {
 
     const pageMetaDto = new PageMetaDto({
       itemCount,
-      pageOptionsDto: { page, take },
+      pageOptionsDto: { page: pageNum, take: takeNum },
     });
 
     return new PageDto(items, pageMetaDto);
@@ -219,29 +239,45 @@ export class PostCommentService {
   }
 
   async remove(id: number, { currentUserId }) {
+    // First check if the comment exists
     const comment = await this.postCommentRepository.findOne({
-      where: { id },
-      relations: ['replies'],
+      where: { id }
     });
 
     if (!comment) {
       throw new NotFoundException(`Comment with ID ${id} not found`);
     }
 
+    // Check if user is authorized to delete
     if (comment.userId !== currentUserId) {
       throw new NotFoundException(
         'You are not authorized to delete this comment',
       );
     }
 
+    // Check for replies
+    const replies = await this.postCommentRepository.find({
+      where: { replyCommentId: id }
+    });
+
     return this.dataSource.transaction(async (manager) => {
-      // If the comment has replies, delete them as well
-      if (comment.replies && comment.replies.length > 0) {
-        await manager.delete(PostComment, { replyCommentId: id });
+      // If the comment has replies, delete them first
+      if (replies && replies.length > 0) {
+        await manager
+          .createQueryBuilder()
+          .delete()
+          .from(PostComment)
+          .where('replyCommentId = :id', { id })
+          .execute();
       }
 
       // Delete the comment itself
-      await manager.delete(PostComment, id);
+      await manager
+        .createQueryBuilder()
+        .delete()
+        .from(PostComment)
+        .where('id = :id', { id })
+        .execute();
 
       // Update the post's comment count
       await manager
@@ -249,7 +285,7 @@ export class PostCommentService {
         .update(Post)
         .set({
           commentCount: () =>
-            `GREATEST(commentCount - ${1 + (comment.replies?.length || 0)}, 0)`,
+            `GREATEST(commentCount - ${1 + (replies?.length || 0)}, 0)`,
         })
         .where('id = :id', { id: comment.postId })
         .execute();
