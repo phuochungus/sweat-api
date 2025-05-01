@@ -88,6 +88,14 @@ export class TestUtils {
    */
   static async cleanupDatabase(app: INestApplication): Promise<void> {
     const dataSource = await this.getDataSource(app);
+
+    // First clear event related tables
+    await dataSource.query('DELETE FROM "event_comment"');
+    await dataSource.query('DELETE FROM "event_media"');
+    await dataSource.query('DELETE FROM "event_participant"');
+    await dataSource.query('DELETE FROM "event"');
+
+    // Then clear post related tables
     await dataSource.query('DELETE FROM "post_react"');
     await dataSource.query('DELETE FROM "post_comment"');
     await dataSource.query('DELETE FROM "post_media"');
@@ -97,8 +105,6 @@ export class TestUtils {
     await dataSource.query('DELETE FROM "user_friend"');
     await dataSource.query('DELETE FROM "user_setting"');
     // Don't delete users as we could have foreign key constraints
-    // If needed, this should be the last deletion
-    // await dataSource.query('DELETE FROM "user"');
   }
 
   /**
@@ -212,6 +218,58 @@ export class TestUtils {
       ) RETURNING *
     `,
       [data.userId, data.postId, data.text, data.replyCommentId],
+    );
+
+    return result[0];
+  }
+
+  /**
+   * Create a test event
+   */
+  static async createTestEvent(
+    app: INestApplication,
+    eventData: any = {},
+  ): Promise<any> {
+    const dataSource = await this.getDataSource(app);
+    const defaultData = {
+      title: 'Test Event',
+      description: 'Test event description',
+      location: 'Test Location',
+      startTime: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
+      privacy: 'PUBLIC',
+      creatorId: 1,
+    };
+
+    const data = { ...defaultData, ...eventData };
+
+    const result = await dataSource.query(
+      `
+      INSERT INTO "event" (
+        "title", "description", "location", "startTime", "privacy", "creatorId"
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6
+      ) RETURNING *
+    `,
+      [
+        data.title,
+        data.description,
+        data.location,
+        data.startTime,
+        data.privacy,
+        data.creatorId,
+      ],
+    );
+
+    // Auto add creator as participant
+    await dataSource.query(
+      `
+      INSERT INTO "event_participant" (
+        "eventId", "userId", "status"
+      ) VALUES (
+        $1, $2, $3
+      )
+    `,
+      [result[0].id, data.creatorId, 'GOING'],
     );
 
     return result[0];

@@ -134,3 +134,8 @@ The CI/CD pipeline automatically builds and deploys the application to the produ
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+run all e2e test:
+npm run test:e2e -- --runInBand --detectOpenHandles
+
+run specific e2e test

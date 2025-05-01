@@ -38,9 +38,23 @@ export enum TYPE_UPLOAD {
   VIDEO = 2,
 }
 
+export enum EventPrivacy {
+  PUBLIC = 'PUBLIC',
+  FRIEND = 'FRIEND',
+  PRIVATE = 'PRIVATE',
+}
+
+export enum ParticipantStatus {
+  GOING = 'GOING',
+  INTERESTED = 'INTERESTED',
+  INVITED = 'INVITED',
+}
+
 export * from './country';
 export * from './friend-request-status.enum';
 export * from './notification-status.enum';
 export * from './post-privacy.enum';
 export * from './react-type.enum';
 export * from './user-gender.enum';
+export * from './event-privacy.enum';
+export * from './participant-status.enum';

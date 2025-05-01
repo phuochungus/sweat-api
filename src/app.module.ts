@@ -19,6 +19,8 @@ import { AuthModule } from './auth/auth.module';
 import { PostReactModule } from './post-react/post-react.module';
 import { HealthModule } from './health/health.module';
 import { DataSource } from 'typeorm';
+import { EventModule } from './event/event.module';
+import { EventCommentModule } from './event-comment/event-comment.module';
 
 @Module({
   imports: [
@@ -52,6 +54,8 @@ import { DataSource } from 'typeorm';
     FriendModule,
     PostCommentModule,
     HealthModule,
+    EventModule,
+    EventCommentModule,
   ],
   controllers: [AppController],
   providers: [
