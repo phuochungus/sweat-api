@@ -5,6 +5,21 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpExceptionFilter } from './common/exception-filters/http-exception-filter';
 import * as admin from 'firebase-admin';
+import {
+  Post,
+  PostComment,
+  PostReact,
+  PostMedia,
+  User,
+  UserSetting,
+  UserNotification,
+  UserFriend,
+  UserFriendRequest,
+  Event,
+  EventParticipant,
+  EventMedia,
+  EventComment,
+} from 'src/entities';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -64,7 +79,23 @@ async function bootstrap() {
     )
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
+  const document = SwaggerModule.createDocument(app, config, {
+    extraModels: [
+      Post,
+      PostComment,
+      PostReact,
+      PostMedia,
+      User,
+      UserSetting,
+      UserNotification,
+      UserFriend,
+      UserFriendRequest,
+      // Event,
+      // EventParticipant,
+      // EventMedia,
+      // EventComment,
+    ],
+  });
   SwaggerModule.setup('docs', app, document);
 
   // Start the server
