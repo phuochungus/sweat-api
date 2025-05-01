@@ -15,10 +15,6 @@ import {
   UserNotification,
   UserFriend,
   UserFriendRequest,
-  Event,
-  EventParticipant,
-  EventMedia,
-  EventComment,
 } from 'src/entities';
 
 async function bootstrap() {
