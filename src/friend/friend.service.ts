@@ -191,6 +191,9 @@ export class FriendService {
       .limit(5)
       .getRawMany();
 
+    if (suggestedUserIds.length === 0) {
+      return [];
+    }
     let users = await this.dataSource
       .createQueryBuilder(User, 'u')
       .where('u.id IN (:...ids)', {

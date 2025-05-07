@@ -11,11 +11,24 @@ export class UserSettingService {
     private readonly userSettingRepository: Repository<UserSetting>,
   ) {}
 
-  findOne(userId: number) {
-    return this.userSettingRepository.findOne({ where: { userId } });
+  async findOne(userId: number) {
+    let setting = await this.userSettingRepository.findOne({
+      where: { userId },
+    });
+    if (!setting) {
+      setting = this.userSettingRepository.create({ userId });
+      this.userSettingRepository.save(setting);
+      setting = await this.userSettingRepository.findOne({
+        where: { userId },
+      });
+    }
+    return setting;
   }
 
-  update(userId: number, updateUserSettingDto: UpdateUserSettingDto) {
-    return this.userSettingRepository.update({ userId }, updateUserSettingDto);
+  async update(userId: number, updateUserSettingDto: UpdateUserSettingDto) {
+    await this.userSettingRepository.update({ userId }, updateUserSettingDto);
+    return this.userSettingRepository.findOne({
+      where: { userId },
+    });
   }
 }

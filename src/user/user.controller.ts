@@ -68,7 +68,13 @@ export class UserController {
   }
 
   @Get('/:id/friend-suggestion')
-  async getFriendSuggestions(@Param('id') currentUserId: string) {
-    return this.friendService.getSuggestions({ userId: currentUserId });
+  async getFriendSuggestions(@Param('id') userId: string) {
+    if (!userId) {
+      throw new BadRequestException('User Id is required');
+    }
+    if (isNaN(+userId)) {
+      throw new BadRequestException('User Id must be a number');
+    }
+    return this.friendService.getSuggestions({ userId: +userId });
   }
 }

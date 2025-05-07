@@ -9,13 +9,13 @@ export class UserSettingController {
   constructor(private readonly userSettingService: UserSettingService) {}
 
   @Get('/')
-  findOne(@User() userId: number) {
+  findOne(@User('id') userId: number) {
     return this.userSettingService.findOne(userId);
   }
 
   @Patch('')
   update(
-    @User() userId: number,
+    @User('id') userId: number,
     @Body() updateUserSettingDto: UpdateUserSettingDto,
   ) {
     return this.userSettingService.update(userId, updateUserSettingDto);
