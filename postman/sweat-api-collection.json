@@ -1,0 +1,1062 @@
+{
+  "info": {
+    "name": "Sweat API",
+    "description": "Complete API collection for the Sweat social network application",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Authentication endpoints",
+      "item": [
+        {
+          "name": "Verify Firebase Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/verify",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "verify"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"your-firebase-token\"\n}"
+            },
+            "description": "Verify Firebase token and create or get user"
+          }
+        },
+        {
+          "name": "Generate Firebase Token (Development Only)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/{{user_id}}/firebase-token",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "{{user_id}}", "firebase-token"]
+            },
+            "description": "Generate Firebase ID token (development environment only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "description": "User related endpoints",
+      "item": [
+        {
+          "name": "Update User Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/profile",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "profile"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullname\": \"John Doe\",\n  \"bio\": \"Fitness enthusiast\",\n  \"profilePictureUrl\": \"https://example.com/profile.jpg\"\n}"
+            },
+            "description": "Update user profile information"
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/login",
+              "host": ["{{base_url}}"],
+              "path": ["users", "login"]
+            },
+            "description": "Get current logged in user data"
+          }
+        },
+        {
+          "name": "Get User Friends",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/friends?page=1&limit=10&search=",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "friends"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get a user's friends with optional search and pagination"
+          }
+        },
+        {
+          "name": "Unfriend User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{friend_user_id}}/friend",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{friend_user_id}}", "friend"]
+            },
+            "description": "Remove a user from friends list"
+          }
+        },
+        {
+          "name": "Get Friend Suggestions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/friend-suggestion",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "friend-suggestion"]
+            },
+            "description": "Get friend suggestions for a user"
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Settings",
+      "description": "User settings endpoints",
+      "item": [
+        {
+          "name": "Get User Settings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-setting",
+              "host": ["{{base_url}}"],
+              "path": ["user-setting"]
+            },
+            "description": "Get current user's settings"
+          }
+        },
+        {
+          "name": "Update User Settings",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-setting",
+              "host": ["{{base_url}}"],
+              "path": ["user-setting"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notificationEnabled\": true,\n  \"emailNotificationEnabled\": false\n}"
+            },
+            "description": "Update user settings"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Friend Requests",
+      "description": "Friend request management endpoints",
+      "item": [
+        {
+          "name": "Create Friend Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/friend-request",
+              "host": ["{{base_url}}"],
+              "path": ["friend-request"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"receiverUserId\": 123\n}"
+            },
+            "description": "Send a friend request to another user"
+          }
+        },
+        {
+          "name": "Get Friend Requests",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/friend-request?type=received&status=pending&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["friend-request"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "received",
+                  "description": "received, sent"
+                },
+                {
+                  "key": "status",
+                  "value": "pending",
+                  "description": "pending, accepted, rejected"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get friend requests with filtering options"
+          }
+        },
+        {
+          "name": "Get Friend Request by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/friend-request/{{request_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["friend-request", "{{request_id}}"]
+            },
+            "description": "Get a specific friend request by ID"
+          }
+        },
+        {
+          "name": "Update Friend Request",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/friend-request/{{request_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["friend-request", "{{request_id}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"accepted\"\n}"
+            },
+            "description": "Update a friend request status (accept or reject)"
+          }
+        },
+        {
+          "name": "Delete Friend Request",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/friend-request/{{request_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["friend-request", "{{request_id}}"]
+            },
+            "description": "Cancel or delete a friend request"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Posts",
+      "description": "Post management endpoints",
+      "item": [
+        {
+          "name": "Create Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts",
+              "host": ["{{base_url}}"],
+              "path": ["posts"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Just finished my workout!\",\n  \"location\": \"Gym\",\n  \"mediaIds\": [\"media-uuid-1\", \"media-uuid-2\"],\n  \"visibility\": \"public\"\n}"
+            },
+            "description": "Create a new post"
+          }
+        },
+        {
+          "name": "Get All Posts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts?page=1&limit=10&userId={{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["posts"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "userId",
+                  "value": "{{user_id}}",
+                  "description": "Optional filter by user ID"
+                }
+              ]
+            },
+            "description": "Get all posts with optional filtering"
+          }
+        },
+        {
+          "name": "Get Feed",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/feed?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "feed"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get current user's feed (posts from friends)"
+          }
+        },
+        {
+          "name": "Get Post by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "{{post_id}}"]
+            },
+            "description": "Get a specific post by ID"
+          }
+        },
+        {
+          "name": "Update Post",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "{{post_id}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Updated post content\",\n  \"location\": \"Home Gym\",\n  \"visibility\": \"friends\"\n}"
+            },
+            "description": "Update an existing post"
+          }
+        },
+        {
+          "name": "Delete Post",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "{{post_id}}"]
+            },
+            "description": "Delete a post"
+          }
+        },
+        {
+          "name": "Like Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}/likes",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "{{post_id}}", "likes"]
+            },
+            "description": "Like a post"
+          }
+        },
+        {
+          "name": "Unlike Post",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}/likes",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "{{post_id}}", "likes"]
+            },
+            "description": "Remove like from a post"
+          }
+        },
+        {
+          "name": "Get Post Likes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}/likes?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "{{post_id}}", "likes"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get users who liked a post"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Post Media",
+      "description": "Media management for posts",
+      "item": [
+        {
+          "name": "Generate Upload Link",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/post-media/upload/generate-link",
+              "host": ["{{base_url}}"],
+              "path": ["post-media", "upload", "generate-link"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"files\": [\n    {\n      \"filename\": \"workout.jpg\",\n      \"contentType\": \"image/jpeg\",\n      \"size\": 1024000\n    }\n  ]\n}"
+            },
+            "description": "Generate presigned URLs for media uploads"
+          }
+        },
+        {
+          "name": "Create Post Media",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/post-media",
+              "host": ["{{base_url}}"],
+              "path": ["post-media"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"media-uuid\",\n  \"url\": \"https://bucket-url/media-path.jpg\",\n  \"type\": \"image\",\n  \"postId\": \"{{post_id}}\"\n}"
+            },
+            "description": "Create post media record after upload"
+          }
+        },
+        {
+          "name": "Get Post Media",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/post-media/post/{{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["post-media", "post", "{{post_id}}"]
+            },
+            "description": "Get media associated with a post"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "description": "Post comments management",
+      "item": [
+        {
+          "name": "Create Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/post-comments",
+              "host": ["{{base_url}}"],
+              "path": ["post-comments"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"postId\": {{post_id}},\n  \"text\": \"Great workout!\",\n  \"replyCommentId\": null\n}"
+            },
+            "description": "Create a comment on a post, or reply to another comment"
+          }
+        },
+        {
+          "name": "Get Comments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/post-comments?postId={{post_id}}&page=1&limit=10&replyCommentId=null",
+              "host": ["{{base_url}}"],
+              "path": ["post-comments"],
+              "query": [
+                {
+                  "key": "postId",
+                  "value": "{{post_id}}"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "replyCommentId",
+                  "value": "null",
+                  "description": "null to get top-level comments, or comment ID to get replies"
+                }
+              ]
+            },
+            "description": "Get comments for a post with pagination"
+          }
+        },
+        {
+          "name": "Get Comment by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/post-comments/{{comment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["post-comments", "{{comment_id}}"]
+            },
+            "description": "Get a specific comment by ID"
+          }
+        },
+        {
+          "name": "Update Comment",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/post-comments/{{comment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["post-comments", "{{comment_id}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Updated comment text\"\n}"
+            },
+            "description": "Update a comment"
+          }
+        },
+        {
+          "name": "Delete Comment",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/post-comments/{{comment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["post-comments", "{{comment_id}}"]
+            },
+            "description": "Delete a comment"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reactions",
+      "description": "Reaction management for posts and comments",
+      "item": [
+        {
+          "name": "React to Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reactions/posts/{{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["reactions", "posts", "{{post_id}}"]
+            },
+            "description": "React to a post (like)"
+          }
+        },
+        {
+          "name": "Remove Post Reaction",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reactions/posts/{{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["reactions", "posts", "{{post_id}}"]
+            },
+            "description": "Remove reaction from a post"
+          }
+        },
+        {
+          "name": "React to Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reactions/comments/{{comment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["reactions", "comments", "{{comment_id}}"]
+            },
+            "description": "React to a comment (like)"
+          }
+        },
+        {
+          "name": "Remove Comment Reaction",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reactions/comments/{{comment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["reactions", "comments", "{{comment_id}}"]
+            },
+            "description": "Remove reaction from a comment"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "description": "User notification management",
+      "item": [
+        {
+          "name": "Get Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-notification?page=1&limit=10&status=unread",
+              "host": ["{{base_url}}"],
+              "path": ["user-notification"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "status",
+                  "value": "unread",
+                  "description": "unread, read, all"
+                }
+              ]
+            },
+            "description": "Get user notifications with filtering and pagination"
+          }
+        },
+        {
+          "name": "Update Notifications",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-notification",
+              "host": ["{{base_url}}"],
+              "path": ["user-notification"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [1, 2, 3],\n  \"status\": \"read\"\n}"
+            },
+            "description": "Update notification status in batch"
+          }
+        },
+        {
+          "name": "Register Device Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-notification/device-token",
+              "host": ["{{base_url}}"],
+              "path": ["user-notification", "device-token"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"device-fcm-token\"\n}"
+            },
+            "description": "Register a device token for push notifications"
+          }
+        },
+        {
+          "name": "Unregister Device Token",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization", 
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-notification/device-token",
+              "host": ["{{base_url}}"],
+              "path": ["user-notification", "device-token"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"device-fcm-token\"\n}"
+            },
+            "description": "Unregister a device token to stop push notifications"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "description": "API health check endpoints",
+      "item": [
+        {
+          "name": "Check API Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Check if the API is healthy and running"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Root",
+      "description": "Root API endpoint",
+      "item": [
+        {
+          "name": "Get API Welcome",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            },
+            "description": "Get API welcome message"
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "your-jwt-token",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "friend_user_id",
+      "value": "2",
+      "type": "string"
+    },
+    {
+      "key": "post_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "comment_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "request_id",
+      "value": "1",
+      "type": "string"
+    }
+  ]
+}
