@@ -15,7 +15,7 @@ export class UserService {
     await this.userRepository.update(id, updateUserDto);
     return this.userRepository.findOne({
       where: { id },
-  });
+    });
   }
 
   /**
