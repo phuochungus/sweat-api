@@ -46,8 +46,6 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
-      whitelist: true,
-      forbidNonWhitelisted: true,
     }),
   );
 
@@ -86,10 +84,6 @@ async function bootstrap() {
       UserNotification,
       UserFriend,
       UserFriendRequest,
-      // Event,
-      // EventParticipant,
-      // EventMedia,
-      // EventComment,
     ],
   });
   SwaggerModule.setup('docs', app, document);
