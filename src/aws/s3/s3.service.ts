@@ -123,7 +123,7 @@ export class S3Service {
       ...(credentials ? { credentials } : {}),
       region: awsConfig.region,
     });
-    const bucket = this.configService.get('s3').bucket;
+    const bucket = awsConfig.s3.bucket;
     const results = [];
     try {
       for (let index = 0; index < batch.length; index++) {
