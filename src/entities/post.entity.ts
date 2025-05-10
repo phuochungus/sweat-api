@@ -36,7 +36,7 @@ export class Post extends BaseEntity {
   location?: string;
 
   @ManyToOne(() => User)
-  @JoinColumn({ name: 'user_id' })
+  @JoinColumn({ name: 'userId' })
   user: User;
 
   @ApiProperty()
