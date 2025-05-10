@@ -41,7 +41,8 @@ export class PostService {
     const takeNum = Number(take);
     const skip = (pageNum - 1) * takeNum;
 
-    const queryBuilder = this.dataSource.createQueryBuilder(Post, 'post')
+    const queryBuilder = this.dataSource
+      .createQueryBuilder(Post, 'post')
       .leftJoinAndSelect('post.user', 'user'); // Add join with user entity
 
     if (createdBy) {
