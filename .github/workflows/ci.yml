@@ -15,18 +15,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Send Telegram notification on deployment start
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.TELEGRAM_TO }}
-          token: ${{ secrets.TELEGRAM_TOKEN }}
-          message: |
-            🚀 Deployment Started!
-            Repository: ${{ github.repository }}
-            Branch: ${{ github.ref_name }}
-            Commit: ${{ github.sha }}
-            Initiated by: ${{ github.actor }}
-
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
