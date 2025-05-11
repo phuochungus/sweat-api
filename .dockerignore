@@ -1,1 +1,45 @@
-/node_modules
+# Exclude version control files
+.git
+.gitignore
+.github
+
+# Exclude node modules and package management files
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Exclude test and documentation files
+test
+tests
+*.test.js
+*.spec.js
+coverage
+docs
+
+# Exclude development and environment files
+.env
+.env.*
+*.local
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# Exclude build files that aren't needed
+dist
+build
+.cache
+
+# Exclude editor configs
+.vscode
+.idea
+*.sublime-*
+*.swp
+*.swo
+
+# Exclude system files
+.DS_Store
+Thumbs.db
+
+# Exclude data directories
+firebase-data
