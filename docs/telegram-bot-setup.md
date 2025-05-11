@@ -14,7 +14,7 @@ This guide will help you set up Telegram notifications for your CI/CD workflow.
 
 1. Search for your new bot in Telegram and start a chat with it
 2. Send any message to the bot (it won't reply, that's normal)
-3. Visit `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates` in your browser 
+3. Visit `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates` in your browser
    (replace `<YOUR_BOT_TOKEN>` with your actual token)
 4. Look for the "chat" object in the JSON response, which contains an "id" field
    Example: `"chat":{"id":123456789,"first_name":"Your","last_name":"Name"}`
