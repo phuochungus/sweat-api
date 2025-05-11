@@ -27,9 +27,9 @@ export class FriendService {
       .innerJoin(
         UserFriend,
         'uf',
-        `u.id = CASE WHEN uf.userId1 = :userId THEN uf.userId2 ELSE uf.userId1 END`,
-      )
-      .where('uf.userId1 = :userId OR uf.userId2 = :userId', { userId });
+        `(uf.userId1 = :userId AND u.id = uf.userId2) OR (uf.userId2 = :userId AND u.id = uf.userId1)`,
+        { userId }
+      );
 
     if (query) {
       queryBuilder.andWhere('u.fullname LIKE :query', { query: `%${query}%` });
