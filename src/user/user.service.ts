@@ -11,6 +11,19 @@ export class UserService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
+  async findAll() {
+    return this.userRepository.find();
+  }
+
+  async findOne(id: number) {
+    const user = await this.userRepository.findOne({
+      where: { id },
+    });
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    return user;
+  }
   async update(id: number, updateUserDto: UpdateUserDto) {
     await this.userRepository.update(id, updateUserDto);
     return this.userRepository.findOne({

@@ -8,6 +8,11 @@ import { DataSource } from 'typeorm';
 export class FriendService {
   constructor(private readonly dataSource: DataSource) {}
 
+  // New findAll method that works with seed.ts
+  async findAll(filterFriendsDto: FilterFriendsDto, { currentUserId }) {
+    return this.getFriends(filterFriendsDto, { currentUserId, userId: currentUserId });
+  }
+
   async getFriends(
     filterFriendsDto: FilterFriendsDto,
     { currentUserId, userId },
