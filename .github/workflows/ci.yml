@@ -42,6 +42,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             aws ssm get-parameter --name "sweat" --with-decryption --query "Parameter.Value" --output text --region ap-southeast-1 > .env
+            docker image prune -f
             docker pull ${{ secrets.DOCKER_USERNAME }}/sweat-api:latest
 
             # Stop and remove the container if it exists
