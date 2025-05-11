@@ -28,7 +28,7 @@ export class FriendService {
         UserFriend,
         'uf',
         `(uf.userId1 = :userId AND u.id = uf.userId2) OR (uf.userId2 = :userId AND u.id = uf.userId1)`,
-        { userId }
+        { userId },
       );
 
     if (query) {
