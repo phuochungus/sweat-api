@@ -10,7 +10,10 @@ export class FriendService {
 
   // New findAll method that works with seed.ts
   async findAll(filterFriendsDto: FilterFriendsDto, { currentUserId }) {
-    return this.getFriends(filterFriendsDto, { currentUserId, userId: currentUserId });
+    return this.getFriends(filterFriendsDto, {
+      currentUserId,
+      userId: currentUserId,
+    });
   }
 
   async getFriends(
