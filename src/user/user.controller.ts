@@ -8,16 +8,20 @@ import {
   Param,
   Query,
   Delete,
+  UseInterceptors,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { GetUserProfileDto, UpdateUserDto } from './dto';
 import { JwtGuard } from 'src/common/guards';
 import { Auth, User } from 'src/common/decorators';
 import { FilterFriendsDto } from 'src/friend/dto/filter-friend.dto';
 import { FriendService } from 'src/friend/friend.service';
+import { ApiTags, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 
 @Auth()
 @UseGuards(JwtGuard)
+@ApiTags('users')
 @Controller('users')
 export class UserController {
   constructor(
@@ -76,5 +80,41 @@ export class UserController {
       throw new BadRequestException('User Id must be a number');
     }
     return this.friendService.getSuggestions({ userId: +userId });
+  }
+
+  /**
+   * Get a user's profile by ID
+   *
+   * Retrieves detailed information about a user, including personal details and friendship status if
+   * requested by an authenticated user
+   *
+   * @param currentUserId - ID of the currently authenticated user
+   * @param userId - ID of the user whose profile is being requested
+   * @returns The user profile information
+   */
+  @Get('/:id')
+  @UseInterceptors(ClassSerializerInterceptor)
+  @ApiOperation({ summary: 'Get user profile by ID' })
+  @ApiParam({ name: 'id', description: 'User ID', example: '1' })
+  @ApiResponse({
+    status: 200,
+    description: 'User profile retrieved successfully',
+    type: GetUserProfileDto,
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async getUserProfile(
+    @User('id') currentUserId: string,
+    @Param('id') userId: string,
+  ) {
+    if (!userId) {
+      throw new BadRequestException('User Id is required');
+    }
+    if (isNaN(+userId)) {
+      throw new BadRequestException('User Id must be a number');
+    }
+    return this.userService.getUserProfile(
+      +userId,
+      currentUserId ? +currentUserId : undefined,
+    );
   }
 }
