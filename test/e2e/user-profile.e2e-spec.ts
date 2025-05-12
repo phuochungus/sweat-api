@@ -17,7 +17,7 @@ describe('UserController (e2e)', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-  
+
   const mockUserService = {
     getUserProfile: jest.fn().mockImplementation((userId) => {
       if (userId === 1) {
@@ -26,7 +26,7 @@ describe('UserController (e2e)', () => {
       throw new Error('User not found');
     }),
   };
-  
+
   // Mock JwtGuard to always pass authentication
   const mockJwtGuard = {
     canActivate: jest.fn().mockImplementation(() => true),
@@ -67,9 +67,7 @@ describe('UserController (e2e)', () => {
     mockUserService.getUserProfile.mockImplementationOnce(() => {
       throw { status: 404, message: 'User not found' };
     });
-    
-    return request(app.getHttpServer())
-      .get('/users/999')
-      .expect(404);
+
+    return request(app.getHttpServer()).get('/users/999').expect(404);
   });
 });

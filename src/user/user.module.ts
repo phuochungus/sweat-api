@@ -7,7 +7,11 @@ import { FriendModule } from 'src/friend/friend.module';
 import { NotificationModule } from 'src/notification/notification.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, UserFriend]), FriendModule, NotificationModule],
+  imports: [
+    TypeOrmModule.forFeature([User, UserFriend]),
+    FriendModule,
+    NotificationModule,
+  ],
   controllers: [UserController],
   providers: [UserService],
   exports: [UserService],

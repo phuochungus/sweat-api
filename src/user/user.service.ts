@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { DataSource, Repository } from 'typeorm';
 import { User, UserFriend } from 'src/entities';
@@ -10,7 +14,8 @@ import { GetUserProfileDto } from './dto/get-user-profile.dto';
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
-    @InjectRepository(UserFriend) private readonly friendRepository: Repository<UserFriend>,
+    @InjectRepository(UserFriend)
+    private readonly friendRepository: Repository<UserFriend>,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -83,23 +88,36 @@ export class UserService {
    * @returns User profile data with friendship status if currentUserId is provided
    * @throws {NotFoundException} When user with given ID is not found
    */
-  async getUserProfile(userId: number, currentUserId?: number): Promise<GetUserProfileDto> {
+  async getUserProfile(
+    userId: number,
+    currentUserId?: number,
+  ): Promise<GetUserProfileDto> {
     // Verify user exists
     const user = await this.userRepository.findOne({
       where: { id: userId },
     });
-    
+
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
-    
+
     // Create and populate profile DTO
     const profileDto = new GetUserProfileDto();
     Object.assign(profileDto, {
       id: user.id,
       fullname: user.fullname,
-      avatarUrl: user.avatarUrl ? user.avatarUrl.replace(process.env.AWS_S3_PUBLIC_URL, process.env.AWS_S3_CDN_URL) : null,
-      coverUrl: user.coverUrl ? user.coverUrl.replace(process.env.AWS_S3_PUBLIC_URL, process.env.AWS_S3_CDN_URL) : null,
+      avatarUrl: user.avatarUrl
+        ? user.avatarUrl.replace(
+            process.env.AWS_S3_PUBLIC_URL,
+            process.env.AWS_S3_CDN_URL,
+          )
+        : null,
+      coverUrl: user.coverUrl
+        ? user.coverUrl.replace(
+            process.env.AWS_S3_PUBLIC_URL,
+            process.env.AWS_S3_CDN_URL,
+          )
+        : null,
       bio: user.bio,
       birthday: user.birthday,
       gender: user.gender,
@@ -107,7 +125,7 @@ export class UserService {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     });
-    
+
     // Check friendship status if currentUserId is provided and different from requested profile
     if (currentUserId && currentUserId !== userId) {
       const friendship = await this.friendRepository.findOne({
@@ -116,7 +134,7 @@ export class UserService {
           { userId1: userId, userId2: currentUserId },
         ],
       });
-      
+
       profileDto.isFriend = !!friendship;
     } else if (currentUserId === userId) {
       // If viewing own profile, set isFriend to true for consistency
@@ -124,7 +142,7 @@ export class UserService {
     } else {
       profileDto.isFriend = false;
     }
-    
+
     return profileDto;
   }
 }
