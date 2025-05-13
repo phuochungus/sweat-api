@@ -1,4 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { GenericFilter } from 'src/common/generic/paginate';
 
@@ -9,6 +10,12 @@ export class FilterPostCommentDto extends GenericFilter {
   })
   @IsNumber()
   @IsOptional()
+  @Transform(({ value }) => {
+    if (isNaN(value)) {
+      return null;
+    }
+    return Number(value);
+  })
   postId?: number;
 
   @ApiPropertyOptional({
@@ -18,6 +25,12 @@ export class FilterPostCommentDto extends GenericFilter {
   })
   @IsNumber()
   @IsOptional()
+  @Transform(({ value }) => {
+    if (isNaN(value)) {
+      return null;
+    }
+    return Number(value);
+  })
   replyCommentId?: number;
 
   @ApiPropertyOptional({
