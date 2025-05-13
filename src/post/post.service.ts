@@ -34,7 +34,7 @@ export class PostService {
   }
 
   async findAll(filterPostDto: FilterPostsDto, { currentUserId }) {
-    const { createdBy, page = 1, take = 10, includes } = filterPostDto;
+    const { createdBy, page = 1, take = 10, includes, query } = filterPostDto;
 
     // Ensure page and take are numbers
     const pageNum = Number(page);
@@ -45,6 +45,11 @@ export class PostService {
       .createQueryBuilder(Post, 'post')
       .leftJoinAndSelect('post.user', 'user'); // Add join with user entity
 
+    if (query) {
+      queryBuilder.andWhere('post.content ILIKE :query', {
+        query: `%${query}%`,
+      });
+    }
     if (createdBy) {
       queryBuilder.andWhere('post.userId = :userId', { userId: createdBy });
     }
@@ -110,7 +115,7 @@ export class PostService {
   }
 
   async getFeed(userId: number, filterPostDto: FilterPostsDto) {
-    const { page = 1, take = 10 } = filterPostDto;
+    const { page = 1, take = 10, query } = filterPostDto;
 
     // Ensure page and take are numbers
     const pageNum = Number(page);
@@ -135,6 +140,12 @@ export class PostService {
       .leftJoinAndSelect('post.user', 'user')
       .where('post.userId IN (:...userIds)', { userIds: friendIds })
       .orderBy('post.createdAt', 'DESC');
+
+    if (query) {
+      queryBuilder.andWhere('post.content ILIKE :query', {
+        query: `%${query}%`,
+      });
+    }
 
     const [items, itemCount] = await Promise.all([
       queryBuilder.take(takeNum).skip(skip).getMany(),

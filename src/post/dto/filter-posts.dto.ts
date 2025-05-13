@@ -7,4 +7,7 @@ export class FilterPostsDto extends GenericFilter {
 
   @ApiProperty({ description: 'isReacted' })
   includes?: string;
+
+  @ApiPropertyOptional({description: 'Search by post content'})
+  query?: string;
 }
