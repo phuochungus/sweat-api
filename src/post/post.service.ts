@@ -111,7 +111,7 @@ export class PostService {
   }
 
   async remove(id: number) {
-    return await this.postRepository.delete(id);
+    return await this.postRepository.softDelete(id);
   }
 
   async getFeed(userId: number, filterPostDto: FilterPostsDto) {
