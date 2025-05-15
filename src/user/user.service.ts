@@ -5,10 +5,11 @@ import {
 } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { DataSource, Repository } from 'typeorm';
-import { User, UserFriend } from 'src/entities';
+import { User, UserFriend, UserFriendRequest } from 'src/entities';
 import { InjectRepository } from '@nestjs/typeorm';
 import { auth } from 'firebase-admin';
 import { GetUserProfileDto } from './dto/get-user-profile.dto';
+import { FriendRequestStatus } from 'src/common/enums';
 
 @Injectable()
 export class UserService {
@@ -16,6 +17,8 @@ export class UserService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRepository(UserFriend)
     private readonly friendRepository: Repository<UserFriend>,
+    @InjectRepository(UserFriendRequest)
+    private readonly friendRequestRepository: Repository<UserFriendRequest>,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -88,13 +91,25 @@ export class UserService {
    * @returns User profile data with friendship status if currentUserId is provided
    * @throws {NotFoundException} When user with given ID is not found
    */
-  async getUserProfile(
-    userId: number,
-    currentUserId?: number,
-  ): Promise<GetUserProfileDto> {
+  async getUserProfile(userId: number, currentUserId?: number) {
     // Verify user exists
     const user = await this.userRepository.findOne({
       where: { id: userId },
+    });
+
+    const pendingFriendRequest = await this.friendRequestRepository.findOne({
+      where: [
+        {
+          senderUserId: userId,
+          receiverUserId: currentUserId,
+          status: FriendRequestStatus.PENDING,
+        },
+        {
+          senderUserId: currentUserId,
+          receiverUserId: userId,
+          status: FriendRequestStatus.PENDING,
+        },
+      ],
     });
 
     if (!user) {
@@ -122,6 +137,7 @@ export class UserService {
       birthday: user.birthday,
       gender: user.gender,
       friendCount: user.friendCount,
+      pendingFriendRequest: pendingFriendRequest,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     });
