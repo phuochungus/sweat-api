@@ -43,7 +43,9 @@ export class PostService {
 
     const queryBuilder = this.dataSource
       .createQueryBuilder(Post, 'post')
-      .leftJoinAndSelect('post.user', 'user'); // Add join with user entity
+      .orderBy('post.createdAt', 'DESC')
+      .leftJoinAndSelect('post.user', 'user')
+      .leftJoinAndSelect('post.postMedia', 'postMedia');
 
     if (query) {
       queryBuilder.andWhere('post.content ILIKE :query', {
@@ -138,8 +140,14 @@ export class PostService {
     const queryBuilder = this.dataSource
       .createQueryBuilder(Post, 'post')
       .leftJoinAndSelect('post.user', 'user')
-      .where('post.userId IN (:...userIds)', { userIds: friendIds })
+      .leftJoinAndSelect('post.postMedia', 'postMedia')
       .orderBy('post.createdAt', 'DESC');
+
+    if (friendIds) {
+      queryBuilder.andWhere('post.userId IN (:...friendIds)', {
+        friendIds,
+      });
+    }
 
     if (query) {
       queryBuilder.andWhere('post.content ILIKE :query', {
