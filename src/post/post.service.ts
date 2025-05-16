@@ -48,7 +48,7 @@ export class PostService {
       .leftJoinAndSelect('post.postMedia', 'postMedia');
 
     if (query) {
-      queryBuilder.andWhere('post.content ILIKE :query', {
+      queryBuilder.andWhere('post.text ILIKE :query', {
         query: `%${query}%`,
       });
     }
