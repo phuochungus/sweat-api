@@ -29,6 +29,14 @@ export class UserController {
     private readonly friendService: FriendService,
   ) {}
 
+  @Get('/')
+  async getAllUsers(
+    @User('id') currentUserId: string,
+    @Query() filterDto: FilterFriendsDto,
+  ) {
+    return this.userService.findAll(filterDto, { currentUserId });
+  }
+
   @Patch('/:id/profile')
   async updateUserProfile(
     @Param('id') id: string,

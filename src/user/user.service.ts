@@ -10,6 +10,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { auth } from 'firebase-admin';
 import { GetUserProfileDto } from './dto/get-user-profile.dto';
 import { FriendRequestStatus } from 'src/common/enums';
+import { FilterFriendsDto } from 'src/friend/dto/filter-friend.dto';
+import { PageDto, PageMetaDto } from 'src/common/dto';
 
 @Injectable()
 export class UserService {
@@ -22,8 +24,29 @@ export class UserService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async findAll() {
-    return this.userRepository.find();
+  async findAll(filterDto: FilterFriendsDto, { currentUserId }) {
+    const { page = 1, take = 10, query } = filterDto;
+    const pageNum = Number(page);
+    const takeNum = Number(take);
+    const skip = (pageNum - 1) * takeNum;
+    const queryBuilder = this.dataSource.createQueryBuilder(User, 'u');
+    if (query) {
+      queryBuilder.andWhere('u.fullname LIKE :query', {
+        query: `%${filterDto.query}%`,
+      });
+    }
+    let [item, itemCount] = await Promise.all([
+      queryBuilder.take(takeNum).skip(skip).getMany(),
+      queryBuilder.getCount(),
+    ]);
+
+    return new PageDto(
+      item,
+      new PageMetaDto({
+        itemCount,
+        pageOptionsDto: { page: pageNum, take: takeNum },
+      }),
+    );
   }
 
   async findOne(id: number) {
