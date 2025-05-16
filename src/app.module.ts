@@ -52,6 +52,7 @@ import { DataSource } from 'typeorm';
     FriendModule,
     PostCommentModule,
     HealthModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [
