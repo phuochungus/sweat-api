@@ -176,7 +176,9 @@ export class FriendService {
       .set({
         friendCount: () => '"friendCount" - 1',
       })
-      .where('id IN (:...ids)', { ids: [Number(currentUserId), Number(userId)] })
+      .where('id IN (:...ids)', {
+        ids: [Number(currentUserId), Number(userId)],
+      })
       .execute();
   }
 
