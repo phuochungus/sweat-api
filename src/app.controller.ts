@@ -17,7 +17,7 @@ export class AppController {
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)
-  async syncFriendCount() {
+  async syncCount() {
     const query = `
       UPDATE "user" u
       SET "friendCount" = (

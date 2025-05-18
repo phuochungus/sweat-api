@@ -10,6 +10,7 @@ import {
   Delete,
   UseInterceptors,
   ClassSerializerInterceptor,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { GetUserProfileDto, UpdateUserDto } from './dto';
@@ -71,7 +72,7 @@ export class UserController {
   @Delete('/:id/friend')
   async unfriend(
     @User('id') currentUserId: string,
-    @Param('id') userId: string,
+    @Param('id', ParseIntPipe) userId: number,
   ) {
     return this.friendService.unfriend({
       currentUserId,

@@ -174,9 +174,9 @@ export class FriendService {
       .createQueryBuilder(User, 'u')
       .update()
       .set({
-        friendCount: () => 'friendCount - 1',
+        friendCount: () => '"friendCount" - 1',
       })
-      .where('id IN (:ids)', { ids: [currentUserId, userId] })
+      .where('id IN (:...ids)', { ids: [Number(currentUserId), Number(userId)] })
       .execute();
   }
 
