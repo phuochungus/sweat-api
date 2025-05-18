@@ -29,7 +29,7 @@ export class UserNotification extends BaseEntity {
   type: SOCIAL;
 
   @ManyToOne(() => User)
-  @JoinColumn({ name: 'user_id' })
+  @JoinColumn({ name: 'receiverUserId' }) // Fixed: Changed from user_id to receiverUserId
   user: User;
 
   @ManyToOne(() => User)

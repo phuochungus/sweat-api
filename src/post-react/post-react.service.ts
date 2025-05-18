@@ -131,18 +131,6 @@ export class PostReactService {
         .where('id = :id', { id: postId })
         .execute();
 
-      // Remove notification if possible (not really necessary)
-      if (post.userId !== userId) {
-        await manager
-          .createQueryBuilder()
-          .delete()
-          .from(UserNotification)
-          .where('senderUserId = :userId', { userId })
-          .andWhere('postId = :postId', { postId })
-          .andWhere('type = :type', { type: SOCIAL.REACT })
-          .execute();
-      }
-
       return { removed: true };
     });
   }
@@ -250,6 +238,21 @@ export class PostReactService {
         .set({ reactCount: () => 'GREATEST(reactCount - 1, 0)' })
         .where('id = :id', { id: commentId })
         .execute();
+
+      // Add notification cleanup for comment reactions
+      if (comment.userId !== userId) {
+        await manager
+          .createQueryBuilder()
+          .delete()
+          .from(UserNotification)
+          .where('senderUserId = :userId', { userId })
+          .andWhere('postId = :postId', { postId: comment.postId })
+          .andWhere('receiverUserId = :receiverUserId', {
+            receiverUserId: comment.userId,
+          })
+          .andWhere('type = :type', { type: SOCIAL.REACT })
+          .execute();
+      }
 
       return { removed: true };
     });
