@@ -6,9 +6,17 @@ import { Post } from 'src/entities/post.entity';
 import { DataSource, Repository } from 'typeorm';
 import { FilterPostsDto } from 'src/post/dto/filter-posts.dto';
 import { PageDto, PageMetaDto } from 'src/common/dto';
-import { PostMedia, PostReact, UserFriend } from 'src/entities';
-import { ReactType } from 'src/common/enums';
+import {
+  PostMedia,
+  PostReact,
+  User,
+  UserFriend,
+  UserNotification,
+} from 'src/entities';
+import { NotificationStatus, ReactType } from 'src/common/enums';
 import { FilterLikeDto } from 'src/post/dto/filter-like.dto';
+import { SOCIAL } from 'src/notification/enum';
+import { TEMPLATE } from 'src/notification/template';
 
 @Injectable()
 export class PostService {
@@ -17,6 +25,8 @@ export class PostService {
     @InjectRepository(UserFriend)
     private readonly friendRepository: Repository<UserFriend>,
     private readonly dataSource: DataSource,
+    @InjectRepository(UserNotification)
+    private readonly userNotificationRepository: Repository<UserNotification>,
   ) {}
 
   async create(createPostDto: CreatePostDto) {
@@ -197,6 +207,25 @@ export class PostService {
         })
         .where('id = :id', { id: postId })
         .execute();
+      if (post.userId != userId) {
+        const currentUser = await manager.findOne(User, {
+          where: { id: userId },
+        });
+
+        const notification = this.userNotificationRepository.create({
+          receiverUserId: post.userId,
+          senderUserId: userId,
+          postId,
+          type: SOCIAL.REACT,
+          status: NotificationStatus.UNREAD,
+          text: TEMPLATE.REACT.replace('<n>', currentUser.fullname).replace(
+            '<content>',
+            post.text.substring(0, 30) + (post.text.length > 30 ? '...' : ''),
+          ),
+        });
+
+        await manager.save(notification);
+      }
     });
 
     // Return an object with success status
