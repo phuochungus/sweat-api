@@ -71,7 +71,7 @@ export class PostReactService {
         .execute();
 
       // Add notification if reacting to someone else's post
-      if (post.userId !== userId) {
+      if (post.userId != userId) {
         const currentUser = await manager.findOne(User, {
           where: { id: userId },
         });
