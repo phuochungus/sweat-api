@@ -11,6 +11,7 @@ import { NotificationModule } from 'src/notification/notification.module';
     TypeOrmModule.forFeature([User, UserFriend, UserFriendRequest]),
     FriendModule,
     NotificationModule,
+    FriendModule,
   ],
   controllers: [UserController],
   providers: [UserService],

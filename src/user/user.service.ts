@@ -12,6 +12,7 @@ import { GetUserProfileDto } from './dto/get-user-profile.dto';
 import { FriendRequestStatus } from 'src/common/enums';
 import { FilterFriendsDto } from 'src/friend/dto/filter-friend.dto';
 import { PageDto, PageMetaDto } from 'src/common/dto';
+import { FriendService } from 'src/friend/friend.service';
 
 @Injectable()
 export class UserService {
@@ -22,10 +23,11 @@ export class UserService {
     @InjectRepository(UserFriendRequest)
     private readonly friendRequestRepository: Repository<UserFriendRequest>,
     private readonly dataSource: DataSource,
+    private readonly friendService: FriendService,
   ) {}
 
   async findAll(filterDto: FilterFriendsDto, { currentUserId }) {
-    const { page = 1, take = 10, query } = filterDto;
+    const { page = 1, take = 10, query, includes } = filterDto;
     const pageNum = Number(page);
     const takeNum = Number(take);
     const skip = (pageNum - 1) * takeNum;
@@ -39,6 +41,57 @@ export class UserService {
       queryBuilder.take(takeNum).skip(skip).getMany(),
       queryBuilder.getCount(),
     ]);
+
+    if (includes?.includes('mutualFriendsCount') && currentUserId) {
+      item = await Promise.all(
+        item.map(async (friend) => {
+          const mutualFriends = await this.friendService.getMutualFriends(
+            currentUserId,
+            friend.id,
+          );
+          console.log('mutualFriends', mutualFriends);
+          return {
+            ...friend,
+            mutualFriends: mutualFriends,
+            mutualFriendsCount: mutualFriends.length,
+          };
+        }),
+      );
+    }
+    if (includes?.includes('pendingRequest')) {
+      item = await Promise.all(
+        item.map(async (friend) => {
+          const pendingRequest = await this.friendRequestRepository
+            .createQueryBuilder('uf')
+            .where(
+              `(uf.senderUserId = :currentUserId AND uf.receiverUserId = :friendId) OR (uf.receiverUserId = :currentUserId AND uf.senderUserId = :friendId)`,
+              { currentUserId, friendId: friend.id },
+            )
+            .getOne();
+          return {
+            ...friend,
+            pendingRequest: pendingRequest,
+          };
+        }),
+      );
+    }
+    // add isFriend to each user
+    if (currentUserId) {
+      item = await Promise.all(
+        item.map(async (friend) => {
+          const friendship = await this.friendRepository.findOne({
+            where: [
+              { userId1: currentUserId, userId2: friend.id },
+              { userId1: friend.id, userId2: currentUserId },
+            ],
+          });
+          return {
+            ...friend,
+            isFriend: !!friendship,
+          };
+        }),
+      );
+    }
 
     return new PageDto(
       item,
