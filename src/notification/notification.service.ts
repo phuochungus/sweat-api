@@ -65,8 +65,20 @@ export class NotificationService {
   }
 
   async batchUpdate(updateDto: UpdateNotificationDto, { currentUserId }) {
-    const { ids, status } = updateDto;
+    const { ids, status, updateAll } = updateDto;
 
+    if (updateAll) {
+      // Update all notifications to the specified status
+      await this.dataSource
+        .createQueryBuilder()
+        .update('user_notification')
+        .set({ status })
+        .where('receiverUserId = :receiverUserId', {
+          receiverUserId: currentUserId,
+        })
+        .execute();
+      return { updated: true };
+    }
     await this.dataSource
       .createQueryBuilder()
       .update('user_notification')
