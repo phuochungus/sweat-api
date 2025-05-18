@@ -1,6 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
+  IsBoolean,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -9,14 +10,14 @@ import {
 import { NotificationStatus } from 'src/common/enums';
 
 export class UpdateNotificationDto {
-  @ApiProperty({
+  @IsOptional()
+  @ApiPropertyOptional({
     description: 'IDs of the notifications to update',
     example: [1, 2, 3],
     type: [Number],
   })
   @IsArray()
   @IsNumber({}, { each: true })
-  @IsNotEmpty()
   ids: number[];
 
   @ApiProperty({
@@ -33,6 +34,6 @@ export class UpdateNotificationDto {
     example: false,
   })
   @IsOptional()
-  @IsEnum(Boolean)
+  @IsBoolean()
   updateAll?: boolean;
 }

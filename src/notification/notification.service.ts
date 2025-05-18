@@ -78,17 +78,17 @@ export class NotificationService {
         })
         .execute();
       return { updated: true };
+    } else if (ids && ids.length) {
+      await this.dataSource
+        .createQueryBuilder()
+        .update('user_notification')
+        .set({ status })
+        .where('id IN (:...ids)', { ids })
+        .andWhere('receiverUserId = :receiverUserId', {
+          receiverUserId: currentUserId,
+        })
+        .execute();
     }
-    await this.dataSource
-      .createQueryBuilder()
-      .update('user_notification')
-      .set({ status })
-      .where('id IN (:...ids)', { ids })
-      .andWhere('receiverUserId = :receiverUserId', {
-        receiverUserId: currentUserId,
-      })
-      .execute();
-
     return { updated: true };
   }
 }
