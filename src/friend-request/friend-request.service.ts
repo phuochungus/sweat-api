@@ -24,7 +24,7 @@ export class FriendRequestService {
   constructor(
     private readonly dataSource: DataSource,
     private readonly friendService: FriendService,
-  ) { }
+  ) {}
 
   async create(
     createUserFriendRequestDto: CreateFriendRequestDto,
@@ -113,9 +113,11 @@ export class FriendRequestService {
           ),
           status: NotificationStatus.UNREAD,
           type: SOCIAL.CREATE_FRIEND_REQUEST,
-          data: JSON.parse(JSON.stringify({
-            ...friendRequest,
-          }))
+          data: JSON.parse(
+            JSON.stringify({
+              ...friendRequest,
+            }),
+          ),
         },
       ])
       .execute();
