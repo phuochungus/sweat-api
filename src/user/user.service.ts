@@ -24,7 +24,7 @@ export class UserService {
     private readonly friendRequestRepository: Repository<UserFriendRequest>,
     private readonly dataSource: DataSource,
     private readonly friendService: FriendService,
-  ) {}
+  ) { }
 
   async findAll(filterDto: FilterFriendsDto, { currentUserId }) {
     const { page = 1, take = 10, query, includes } = filterDto;
@@ -33,7 +33,7 @@ export class UserService {
     const skip = (pageNum - 1) * takeNum;
     const queryBuilder = this.dataSource.createQueryBuilder(User, 'u');
     if (query) {
-      queryBuilder.andWhere('u.fullname LIKE :query', {
+      queryBuilder.andWhere('u.fullname ILIKE :query', {
         query: `%${filterDto.query}%`,
       });
     }
@@ -49,7 +49,6 @@ export class UserService {
             currentUserId,
             friend.id,
           );
-          console.log('mutualFriends', mutualFriends);
           return {
             ...friend,
             mutualFriends: mutualFriends,
@@ -199,15 +198,15 @@ export class UserService {
       fullname: user.fullname,
       avatarUrl: user.avatarUrl
         ? user.avatarUrl.replace(
-            process.env.AWS_S3_PUBLIC_URL,
-            process.env.AWS_S3_CDN_URL,
-          )
+          process.env.AWS_S3_PUBLIC_URL,
+          process.env.AWS_S3_CDN_URL,
+        )
         : null,
       coverUrl: user.coverUrl
         ? user.coverUrl.replace(
-            process.env.AWS_S3_PUBLIC_URL,
-            process.env.AWS_S3_CDN_URL,
-          )
+          process.env.AWS_S3_PUBLIC_URL,
+          process.env.AWS_S3_CDN_URL,
+        )
         : null,
       bio: user.bio,
       birthday: user.birthday,
