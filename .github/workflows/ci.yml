@@ -34,23 +34,42 @@ jobs:
     env:
       GIT_SHA: ${{ needs.build-and-push.outputs.GIT_SHA }}
     steps:
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@master
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            aws ssm get-parameter --name "sweat" --with-decryption --query "Parameter.Value" --output text --region ap-southeast-1 > .env
-            docker image prune -f
-            docker pull ${{ secrets.DOCKER_USERNAME }}/sweat-api:latest
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-southeast-1
 
-            # Stop and remove the container if it exists
-            docker stop sweat-api || true
-            docker rm sweat-api || true
+      - name: Install Session Manager Plugin
+        run: |
+          curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
+          sudo dpkg -i session-manager-plugin.deb
 
-            # Run the new container
-            docker run -d --name sweat-api -p 80:3000 --env-file .env --restart always ${{ secrets.DOCKER_USERNAME }}/sweat-api:latest
+      - name: Deploy to EC2 using Session Manager
+        run: |
+          # Create a deployment script
+          cat > deploy.sh << 'EOF'
+          aws ssm get-parameter --name "sweat" --with-decryption --query "Parameter.Value" --output text --region ap-southeast-1 > .env
+          docker image prune -f
+          docker pull ${{ secrets.DOCKER_USERNAME }}/sweat-api:latest
+
+          # Stop and remove the container if it exists
+          docker stop sweat-api || true
+          docker rm sweat-api || true
+
+          # Run the new container
+          docker run -d --name sweat-api -p 80:3000 --env-file .env --restart always ${{ secrets.DOCKER_USERNAME }}/sweat-api:latest
+          EOF
+
+          chmod +x deploy.sh
+
+          # Execute the script on the target instance using Session Manager
+          aws ssm send-command \
+            --instance-ids "i-07ab8c99647799af5" \
+            --document-name "AWS-RunShellScript" \
+            --parameters "commands=$(cat deploy.sh)" \
+            --output text
 
       - name: Send Telegram notification on success
         if: success()
