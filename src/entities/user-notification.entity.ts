@@ -4,6 +4,7 @@ import { User } from './user.entity';
 import { NotificationStatus } from 'src/common/enums';
 import { Post } from 'src/entities/post.entity';
 import { SOCIAL } from 'src/notification/enum';
+import { ApiProperty } from '@nestjs/swagger';
 @Entity('user_notification')
 export class UserNotification extends BaseEntity {
   @Column()
@@ -39,4 +40,8 @@ export class UserNotification extends BaseEntity {
   @ManyToOne(() => Post, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'postId' })
   post: Post;
+
+  @ApiProperty()
+  @Column({ type: 'jsonb', default: {} })
+  data: Record<string, any>;
 }
