@@ -13,7 +13,7 @@ import {
   UserFriend,
   UserNotification,
 } from 'src/entities';
-import { NotificationStatus, ReactType } from 'src/common/enums';
+import { NotificationStatus, PostPrivacy, ReactType } from 'src/common/enums';
 import { FilterLikeDto } from 'src/post/dto/filter-like.dto';
 import { SOCIAL } from 'src/notification/enum';
 import { TEMPLATE } from 'src/notification/template';
@@ -55,7 +55,40 @@ export class PostService {
       .createQueryBuilder(Post, 'post')
       .orderBy('post.createdAt', 'DESC')
       .leftJoinAndSelect('post.user', 'user')
-      .leftJoinAndSelect('post.postMedia', 'postMedia');
+      .leftJoinAndSelect('post.postMedia', 'postMedia')
+      .where('post.deletedAt IS NULL');
+
+    // Base privacy condition - always show public posts
+    queryBuilder.andWhere('post.privacy = :publicPrivacy', {
+      publicPrivacy: PostPrivacy.PUBLIC,
+    });
+
+    // If user is logged in, also show friend posts
+    if (currentUserId) {
+      // Get user's friends
+      const friends = await this.friendRepository.find({
+        where: [{ userId1: currentUserId }, { userId2: currentUserId }],
+      });
+
+      // Extract friend IDs
+      const friendIds = friends.map((friend) =>
+        friend.userId1 === currentUserId ? friend.userId2 : friend.userId1,
+      );
+
+      // Add condition for friend posts
+      queryBuilder.orWhere(
+        '(post.privacy = :friendPrivacy AND post.userId IN (:...friendIds))',
+        {
+          friendPrivacy: PostPrivacy.FRIEND,
+          friendIds: friendIds.length > 0 ? friendIds : [0], // Use [0] as fallback to prevent SQL error with empty array
+        },
+      );
+
+      // Add condition for user's own posts
+      queryBuilder.orWhere('post.userId = :currentUserId', {
+        currentUserId,
+      });
+    }
 
     if (query) {
       queryBuilder.andWhere('post.text ILIKE :query', {
