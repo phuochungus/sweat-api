@@ -241,6 +241,21 @@ export class FriendRequestService {
       );
     }
 
+    const [currentUser, receiverUser] = await Promise.all([
+      this.dataSource
+        .createQueryBuilder(User, 'u')
+        .where('u.id = :id', { id: currentUserId })
+        .getOne(),
+      this.dataSource
+        .createQueryBuilder(User, 'u')
+        .where('u.id = :id', { id: friendRequest.receiverUserId })
+        .getOne(),
+    ]);
+
+    if (!currentUser || !receiverUser) {
+      throw new NotFoundException('User not found');
+    }
+
     await this.dataSource
       .createQueryBuilder(UserFriendRequest, 'ufr')
       .update()
@@ -272,9 +287,16 @@ export class FriendRequestService {
         .values([
           {
             receiverUserId: friendRequest.senderUserId,
-            text: 'Friend request accepted',
+            text: `<b>${currentUser.fullname}</b> đã chấp nhận lời mời kết bạn.`,
             status: NotificationStatus.UNREAD,
             type: SOCIAL.ACCEPT_FRIEND_REQUEST,
+            data: JSON.parse(
+              JSON.stringify({
+                ...friendRequest,
+                senderUser: currentUser,
+                receiverUser: receiverUser,
+              }),
+            ),
           },
         ])
         .execute();
