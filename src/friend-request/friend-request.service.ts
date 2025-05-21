@@ -302,6 +302,20 @@ export class FriendRequestService {
         .execute();
 
       await this.dataSource
+        .createQueryBuilder(UserNotification, 'un')
+        .update()
+        .set({
+          data: JSON.parse(
+            JSON.stringify({
+              id: friendRequest.id,
+              status: FriendRequestStatus.ACCEPTED,
+            }),
+          ),
+        })
+        .where('data->>id = :id', { id: friendRequest.id })
+        .execute();
+
+      await this.dataSource
         .createQueryBuilder(User, 'u')
         .update()
         .set({
@@ -324,6 +338,20 @@ export class FriendRequestService {
         .createQueryBuilder(UserFriendRequest, 'ufr')
         .delete()
         .where('id = :id', { id: friendRequestId })
+        .execute();
+
+      await this.dataSource
+        .createQueryBuilder(UserNotification, 'un')
+        .update()
+        .set({
+          data: JSON.parse(
+            JSON.stringify({
+              id: friendRequest.id,
+              status: FriendRequestStatus.REJECTED,
+            }),
+          ),
+        })
+        .where('data->>id = :id', { id: friendRequest.id })
         .execute();
 
       return {
