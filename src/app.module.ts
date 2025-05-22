@@ -19,6 +19,9 @@ import { AuthModule } from './auth/auth.module';
 import { PostReactModule } from './post-react/post-react.module';
 import { HealthModule } from './health/health.module';
 import { DataSource } from 'typeorm';
+import { BullModule } from '@nestjs/bullmq';
+import { ImageProcessingModule } from './image-processing/image-processing.module';
+import { VideoProcessingModule } from './video-processing/video-processing.module';
 
 @Module({
   imports: [
@@ -53,6 +56,25 @@ import { DataSource } from 'typeorm';
     PostCommentModule,
     HealthModule,
     ScheduleModule.forRoot(),
+    BullModule.forRootAsync({
+      useFactory: (configService: ConfigService) => {
+        const config = configService.get('redis');
+        if (!config) {
+          throw new Error('Cannot start app without Redis config');
+        }
+        return {
+          connection: {
+            host: config.host,
+            port: config.port,
+            password: config.password,
+            username: config.username,
+          },
+        };
+      },
+      inject: [ConfigService],
+    }),
+    ImageProcessingModule,
+    VideoProcessingModule,
   ],
   controllers: [AppController],
   providers: [

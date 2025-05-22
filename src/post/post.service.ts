@@ -17,6 +17,8 @@ import { NotificationStatus, PostPrivacy, ReactType } from 'src/common/enums';
 import { FilterLikeDto } from 'src/post/dto/filter-like.dto';
 import { SOCIAL } from 'src/notification/enum';
 import { TEMPLATE } from 'src/notification/template';
+import { ImageProcessingService } from 'src/image-processing/image-processing.service';
+import { VideoProcessingService } from 'src/video-processing/video-processing.service';
 
 @Injectable()
 export class PostService {
@@ -27,6 +29,8 @@ export class PostService {
     private readonly dataSource: DataSource,
     @InjectRepository(UserNotification)
     private readonly userNotificationRepository: Repository<UserNotification>,
+    private readonly imageProcessingService: ImageProcessingService,
+    private readonly videoProcessingService: VideoProcessingService,
   ) {}
 
   async create(createPostDto: CreatePostDto) {
@@ -36,11 +40,42 @@ export class PostService {
         process.env.AWS_S3_PUBLIC_URL,
         process.env.AWS_S3_CDN_URL,
       );
+
+      // Extract S3 key from URL
+      const s3Key = media.url
+        .replace(process.env.AWS_S3_CDN_URL, '')
+        .replace(process.env.AWS_S3_PUBLIC_URL, '');
+
+      // Add media processing job to the appropriate queue based on media type
+      if (this.isImageFile(media.url)) {
+        this.imageProcessingService.addProcessingJob({
+          url: media.url,
+          s3_key: s3Key,
+        });
+      } else if (this.isVideoFile(media.url)) {
+        this.videoProcessingService.addProcessingJob({
+          url: media.url,
+          s3_key: s3Key,
+        });
+      }
+
       const postMediaEntity = new PostMedia(media);
       return postMediaEntity;
     });
     post.mediaCount = createPostDto.postMedia.length;
     return await this.postRepository.save(post, { transaction: true });
+  }
+
+  // Helper method to determine if a file is an image
+  private isImageFile(url: string): boolean {
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    return imageExtensions.some((ext) => url.toLowerCase().endsWith(ext));
+  }
+
+  // Helper method to determine if a file is a video
+  private isVideoFile(url: string): boolean {
+    const videoExtensions = ['.mp4', '.mov', '.avi', '.webm', '.mkv'];
+    return videoExtensions.some((ext) => url.toLowerCase().endsWith(ext));
   }
 
   async findAll(filterPostDto: FilterPostsDto, { currentUserId }) {
@@ -58,6 +93,9 @@ export class PostService {
       .leftJoinAndSelect('post.postMedia', 'postMedia')
       .where('post.deletedAt IS NULL');
 
+    if (createdBy) {
+      queryBuilder.where('post.userId = :userId', { userId: createdBy });
+    }
     // Base privacy condition - always show public posts
     queryBuilder.andWhere('post.privacy = :publicPrivacy', {
       publicPrivacy: PostPrivacy.PUBLIC,
@@ -94,9 +132,6 @@ export class PostService {
       queryBuilder.andWhere('post.text ILIKE :query', {
         query: `%${query}%`,
       });
-    }
-    if (createdBy) {
-      queryBuilder.andWhere('post.userId = :userId', { userId: createdBy });
     }
 
     let [item, itemCount] = await Promise.all([

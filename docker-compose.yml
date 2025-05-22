@@ -19,6 +19,19 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    
+  redis:
+    image: redis:alpine
+    container_name: sweat-redis
+    ports:
+      - '6379:6379'
+    networks:
+      - sweat-network
+    healthcheck:
+      test: ['CMD-SHELL', 'redis-cli ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Uncomment if you want to include MinIO as a local S3-compatible storage service
   # minio:
