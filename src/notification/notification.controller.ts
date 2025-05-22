@@ -87,4 +87,19 @@ export class NotificationController {
     );
     return { success: true, message: 'Device token unregistered successfully' };
   }
+
+  @Delete('/:id')
+  @ApiOperation({ summary: 'Delete a notification' })
+  @ApiResponse({
+    status: 200,
+    description: 'Notification deleted successfully',
+  })
+  async deleteNotification(
+    @User('id') currentUserId: string,
+    @Query('id') notificationId: number,
+  ) {
+    return this.notificationService.deleteNotification(+notificationId, {
+      currentUserId,
+    });
+  }
 }

@@ -91,4 +91,29 @@ export class NotificationService {
     }
     return { updated: true };
   }
+
+  async deleteNotification(id: number, { currentUserId }) {
+    const notification = await this.dataSource
+      .createQueryBuilder()
+      .select('un')
+      .from('user_notification', 'un')
+      .where('un.id = :id', { id })
+      .andWhere('un.receiverUserId = :receiverUserId', {
+        receiverUserId: currentUserId,
+      })
+      .getOne();
+
+    if (!notification) {
+      throw new ForbiddenException('Notification not found');
+    }
+
+    await this.dataSource
+      .createQueryBuilder()
+      .delete()
+      .from('user_notification')
+      .where('id = :id', { id })
+      .execute();
+
+    return { deleted: true };
+  }
 }
