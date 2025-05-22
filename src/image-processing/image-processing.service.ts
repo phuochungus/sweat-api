@@ -16,7 +16,7 @@ export class ImageProcessingService {
         delay: 1000,
       },
     });
-    
+
     return { queued: true };
   }
 }
