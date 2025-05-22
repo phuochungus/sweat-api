@@ -96,6 +96,11 @@ export class PostService {
     if (createdBy) {
       queryBuilder.where('post.userId = :userId', { userId: createdBy });
     }
+    if (query) {
+      queryBuilder.andWhere('post.text ILIKE :query', {
+        query: `%${query}%`,
+      });
+    }
     // Base privacy condition - always show public posts
     queryBuilder.andWhere('post.privacy = :publicPrivacy', {
       publicPrivacy: PostPrivacy.PUBLIC,
@@ -125,12 +130,6 @@ export class PostService {
       // Add condition for user's own posts
       queryBuilder.orWhere('post.userId = :currentUserId', {
         currentUserId,
-      });
-    }
-
-    if (query) {
-      queryBuilder.andWhere('post.text ILIKE :query', {
-        query: `%${query}%`,
       });
     }
 
