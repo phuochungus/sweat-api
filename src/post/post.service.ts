@@ -262,31 +262,46 @@ export class PostService {
     if (!post) {
       throw new NotFoundException('Post not found');
     }
-    await this.dataSource.transaction(async (manager) => {
-      await manager
-        .createQueryBuilder()
-        .insert()
-        .into('post_react')
-        .values({
-          userId,
-          postId,
-          type: ReactType.LIKE,
-        })
-        .execute();
 
-      await manager
-        .createQueryBuilder()
-        .update(Post)
-        .set({
-          reactCount: () => '"reactCount" + 1',
-        })
-        .where('id = :id', { id: postId })
-        .execute();
-      if (post.userId != userId) {
-        const currentUser = await manager.findOne(User, {
-          where: { id: userId },
-        });
+    // Check if user already liked the post
+    const existingReaction = await this.isUserReactedToPost(userId, postId);
+    if (existingReaction) {
+      return {
+        success: false,
+        message: 'Post already liked',
+      };
+    }
 
+    // Insert reaction
+    await this.dataSource
+      .createQueryBuilder()
+      .insert()
+      .into('post_react')
+      .values({
+        userId,
+        postId,
+        type: ReactType.LIKE,
+      })
+      .execute();
+
+    // Increment react count
+    await this.dataSource
+      .createQueryBuilder()
+      .update(Post)
+      .set({
+        reactCount: () => '"reactCount" + 1',
+      })
+      .where('id = :id', { id: postId })
+      .execute();
+
+    // Create notification if liking someone else's post
+    if (post.userId != userId) {
+      const currentUser = await this.dataSource
+        .createQueryBuilder(User, 'user')
+        .where('user.id = :id', { id: userId })
+        .getOne();
+
+      if (currentUser) {
         const notification = this.userNotificationRepository.create({
           receiverUserId: post.userId,
           senderUserId: userId,
@@ -299,9 +314,9 @@ export class PostService {
           ),
         });
 
-        await manager.save(notification);
+        await this.userNotificationRepository.save(notification);
       }
-    });
+    }
 
     // Return an object with success status
     return {
@@ -320,23 +335,32 @@ export class PostService {
       throw new NotFoundException('Post not found');
     }
 
-    await this.dataSource.transaction(async (manager) => {
-      await manager
-        .createQueryBuilder()
-        .delete()
-        .from('post_react')
-        .where('userId = :userId AND postId = :postId', { userId, postId })
-        .execute();
+    // Check if user has liked the post
+    const existingReaction = await this.isUserReactedToPost(userId, postId);
+    if (!existingReaction) {
+      return {
+        success: false,
+        message: 'Post not liked by user',
+      };
+    }
 
-      await manager
-        .createQueryBuilder()
-        .update(Post)
-        .set({
-          reactCount: () => '"reactCount" - 1',
-        })
-        .where('id = :id', { id: postId })
-        .execute();
-    });
+    // Remove reaction
+    await this.dataSource
+      .createQueryBuilder()
+      .delete()
+      .from('post_react')
+      .where('userId = :userId AND postId = :postId', { userId, postId })
+      .execute();
+
+    // Decrement react count only if reactCount > 0
+    await this.dataSource
+      .createQueryBuilder()
+      .update(Post)
+      .set({
+        reactCount: () => 'GREATEST("reactCount" - 1, 0)',
+      })
+      .where('id = :id', { id: postId })
+      .execute();
 
     // Return an object with success status
     return {

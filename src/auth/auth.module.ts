@@ -4,7 +4,6 @@ import { User } from '../entities';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { CacheModule } from '@nestjs/cache-manager';
-import { UserModule } from '../user/user.module';
 
 @Global()
 @Module({

@@ -5,15 +5,13 @@ import {
   UnauthorizedException,
   Inject,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectDataSource } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
-import { Repository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import * as admin from 'firebase-admin';
 import { ConfigService } from '@nestjs/config';
-import { UserGender } from 'src/common/enums';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class JwtGuard implements CanActivate {
@@ -22,7 +20,7 @@ export class JwtGuard implements CanActivate {
   constructor(
     private readonly configService: ConfigService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    private readonly authService: AuthService,
+    @InjectDataSource() private dataSource: DataSource,
   ) {
     const environment = this.configService.get('environment');
     this.isTestMode = environment === 'test';
@@ -55,8 +53,32 @@ export class JwtGuard implements CanActivate {
         return true;
       }
 
-      // If not in cache, use the auth service to verify and get user
-      const user = await this.authService.verifyTokenAndGetUser(token);
+      const decodedToken = await admin.auth().verifyIdToken(token);
+      const firebaseId = decodedToken.uid;
+      let user = await this.dataSource
+        .getRepository(User)
+        .createQueryBuilder('user')
+        .where('user.firebaseId = :firebaseId', { firebaseId })
+        .getOne();
+      if (!user) {
+        // create a new user if not found
+        await this.dataSource.getRepository(User).insert({
+          firebaseId: firebaseId,
+          fullname: decodedToken.name,
+          avatarUrl: decodedToken.picture,
+        });
+        user = await this.dataSource
+          .getRepository(User)
+          .createQueryBuilder('user')
+          .where('user.firebaseId = :firebaseId', { firebaseId })
+          .getOne();
+      }
+      await this.cacheManager.set(
+        `auth_token:${token}`,
+        { id: user.id, firebaseId: user.firebaseId },
+        decodedToken.exp * 1000 - Date.now(),
+      );
+
       request.user = user;
       return true;
     } catch (error) {

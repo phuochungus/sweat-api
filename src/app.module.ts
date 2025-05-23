@@ -23,6 +23,9 @@ import { BullModule } from '@nestjs/bullmq';
 import { ImageProcessingModule } from './image-processing/image-processing.module';
 import { VideoProcessingModule } from './video-processing/video-processing.module';
 import { CacheModule } from '@nestjs/cache-manager';
+import { Keyv } from 'keyv';
+import { createKeyv } from '@keyv/redis';
+import { CacheableMemory } from 'cacheable';
 
 @Module({
   imports: [
@@ -32,10 +35,19 @@ import { CacheModule } from '@nestjs/cache-manager';
       ],
       isGlobal: true,
     }),
-    CacheModule.register({
+    CacheModule.registerAsync({
       isGlobal: true,
-      ttl: 3600, // 1 hour cache TTL by default
-      max: 100, // Maximum number of items in cache
+      useFactory: async (configService: ConfigService) => {
+        return {
+          stores: [
+            new Keyv({
+              store: new CacheableMemory({ ttl: 60000, lruSize: 5000 }),
+            }),
+            createKeyv(configService.get('redis')?.url),
+          ],
+        };
+      },
+      inject: [ConfigService],
     }),
     AuthModule,
     ScheduleModule.forRoot(),

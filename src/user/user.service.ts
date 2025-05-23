@@ -124,7 +124,7 @@ export class UserService {
    * @returns A Firebase ID token
    */
   async generateFirebaseToken(userId: number): Promise<string> {
-    let user: { firebaseId?: string } = await this.userRepository.findOne({
+    const user: { firebaseId?: string } = await this.userRepository.findOne({
       where: { id: userId },
     });
 

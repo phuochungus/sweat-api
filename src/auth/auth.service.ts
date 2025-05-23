@@ -52,8 +52,8 @@ export class AuthService {
           // Verify the Firebase token
           const decodedToken = await admin.auth().verifyIdToken(token);
           firebaseId = decodedToken.uid;
-          let exp = decodedToken.exp;
-          let cachedKeyTTL = exp - Date.now() / 1000;
+          const exp = decodedToken.exp;
+          const cachedKeyTTL = exp - Date.now() / 1000;
 
           // Cache the decoded token for future use (shorter TTL than the full user)
           await this.cacheManager.set(
