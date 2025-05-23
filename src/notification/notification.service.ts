@@ -1,11 +1,10 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { PageDto, PageMetaDto } from 'src/common/dto';
-import { GenericFilter } from 'src/common/generic/paginate';
-import { UserNotification } from 'src/entities';
+import { PageMetaDto } from 'src/common/dto';
 import { FilterNotificationDto } from 'src/notification/dto/filter-notification.dto';
 import { UpdateNotificationDto } from 'src/notification/dto/update-notification.dto';
 import { DataSource } from 'typeorm';
 import { NotificationStatus } from 'src/common/enums';
+import { SOCIAL } from 'src/notification/enum';
 
 @Injectable()
 export class NotificationService {
@@ -37,10 +36,30 @@ export class NotificationService {
       .limit(take)
       .offset((page - 1) * take);
 
-    const [items, itemCount] = await Promise.all([
+    let [items, itemCount] = await Promise.all([
       queryBuilder.getRawMany(),
       queryBuilder.getCount(),
     ]);
+
+    let promises = items.map(async (item) => {
+      let data = null;
+      if (item.type == SOCIAL.CREATE_FRIEND_REQUEST) {
+        const friendRequestId = item.data.id;
+        if (friendRequestId) {
+          data = await this.dataSource
+            .createQueryBuilder()
+            .select('ufr')
+            .from('user_friend_request', 'ufr')
+            .where('ufr.id = :friendRequestId', { friendRequestId })
+            .getOne();
+        }
+      }
+
+      item.data = data;
+      return item;
+    });
+
+    await Promise.all(promises);
 
     const unreadCount = await this.dataSource
       .createQueryBuilder()

@@ -115,7 +115,7 @@ export class FriendRequestService {
           type: SOCIAL.CREATE_FRIEND_REQUEST,
           data: JSON.parse(
             JSON.stringify({
-              ...friendRequest,
+              id: friendRequest.id,
             }),
           ),
         },

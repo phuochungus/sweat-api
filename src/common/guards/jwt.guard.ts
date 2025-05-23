@@ -12,6 +12,8 @@ import * as admin from 'firebase-admin';
 import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { Reflector } from '@nestjs/core';
+import { IS_PUBLIC_KEY } from 'src/common/decorators';
 
 @Injectable()
 export class JwtGuard implements CanActivate {
@@ -21,6 +23,7 @@ export class JwtGuard implements CanActivate {
     private readonly configService: ConfigService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @InjectDataSource() private dataSource: DataSource,
+    private reflector: Reflector,
   ) {
     const environment = this.configService.get('environment');
     this.isTestMode = environment === 'test';
@@ -32,6 +35,13 @@ export class JwtGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const authHeader = request.headers.authorization;
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (isPublic) {
+      return true;
+    }
 
     if (!authHeader) {
       throw new UnauthorizedException('Authorization header is missing');

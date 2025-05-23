@@ -54,7 +54,7 @@ export class UserController {
 
   @Get('/login')
   async getUser(@User() user) {
-    return user;
+    return this.userService.findOne(user.id);
   }
 
   @Get('/:id/friends')
