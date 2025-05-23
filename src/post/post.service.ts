@@ -3,7 +3,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from 'src/entities/post.entity';
-import { DataSource, Repository } from 'typeorm';
+import { Brackets, DataSource, Repository } from 'typeorm';
 import { FilterPostsDto } from 'src/post/dto/filter-posts.dto';
 import { PageDto, PageMetaDto } from 'src/common/dto';
 import {
@@ -93,44 +93,52 @@ export class PostService {
       .leftJoinAndSelect('post.postMedia', 'postMedia')
       .where('post.deletedAt IS NULL');
 
-    if (createdBy) {
-      queryBuilder.where('post.userId = :userId', { userId: createdBy });
-    }
     if (query) {
-      queryBuilder.andWhere('post.text ILIKE :query', {
+      queryBuilder.where('post.text ILIKE :query', {
         query: `%${query}%`,
       });
     }
-    // Base privacy condition - always show public posts
-    queryBuilder.andWhere('post.privacy = :publicPrivacy', {
-      publicPrivacy: PostPrivacy.PUBLIC,
-    });
+    if (createdBy) {
+      queryBuilder.andWhere('post.userId = :userId', { userId: createdBy });
+    } else {
+      const friendIds = [];
+      if (currentUserId) {
+        // Get user's friends
+        const friends = await this.friendRepository.find({
+          where: [{ userId1: currentUserId }, { userId2: currentUserId }],
+        });
 
-    // If user is logged in, also show friend posts
-    if (currentUserId) {
-      // Get user's friends
-      const friends = await this.friendRepository.find({
-        where: [{ userId1: currentUserId }, { userId2: currentUserId }],
-      });
+        // Extract friend IDs
+        friends.forEach((friend) => {
+          if (friend.userId1 === currentUserId) {
+            friendIds.push(friend.userId2);
+          } else {
+            friendIds.push(friend.userId1);
+          }
+        });
+      }
 
-      // Extract friend IDs
-      const friendIds = friends.map((friend) =>
-        friend.userId1 === currentUserId ? friend.userId2 : friend.userId1,
+      // Replace the simple condition with the complex one using Brackets
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.where('post.privacy = :publicPrivacy', {
+            publicPrivacy: PostPrivacy.PUBLIC,
+          }).orWhere(
+            new Brackets((innerQb) => {
+              innerQb
+                .where('post.privacy = :friendPrivacy', {
+                  friendPrivacy: PostPrivacy.FRIEND,
+                })
+                .andWhere(
+                  friendIds.length > 0
+                    ? 'post.userId IN (:...friendIds)'
+                    : '1=0', // If no friends, this condition should never match
+                  { friendIds },
+                );
+            }),
+          );
+        }),
       );
-
-      // Add condition for friend posts
-      queryBuilder.orWhere(
-        '(post.privacy = :friendPrivacy AND post.userId IN (:...friendIds))',
-        {
-          friendPrivacy: PostPrivacy.FRIEND,
-          friendIds: friendIds.length > 0 ? friendIds : [0], // Use [0] as fallback to prevent SQL error with empty array
-        },
-      );
-
-      // Add condition for user's own posts
-      queryBuilder.orWhere('post.userId = :currentUserId', {
-        currentUserId,
-      });
     }
 
     let [item, itemCount] = await Promise.all([
