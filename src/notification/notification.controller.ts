@@ -6,6 +6,7 @@ import {
   Post,
   Query,
   Delete,
+  Param,
 } from '@nestjs/common';
 import { NotificationService } from './notification.service';
 import { Auth, User } from 'src/common/decorators';
@@ -96,7 +97,7 @@ export class NotificationController {
   })
   async deleteNotification(
     @User('id') currentUserId: string,
-    @Query('id') notificationId: number,
+    @Param('id') notificationId: number,
   ) {
     return this.notificationService.deleteNotification(+notificationId, {
       currentUserId,
