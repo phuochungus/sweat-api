@@ -13,14 +13,14 @@ export class User extends BaseEntity {
   @Column({ nullable: true })
   @ApiPropertyOptional()
   @Transform(({ value }) =>
-    value.replace(process.env.AWS_S3_PUBLIC_URL, process.env.AWS_S3_CDN_URL),
+    value?.replace(process.env.AWS_S3_PUBLIC_URL, process.env.AWS_S3_CDN_URL),
   )
   avatarUrl?: string;
 
   @Column({ nullable: true })
   @ApiPropertyOptional()
   @Transform(({ value }) =>
-    value.replace(process.env.AWS_S3_PUBLIC_URL, process.env.AWS_S3_CDN_URL),
+    value?.replace(process.env.AWS_S3_PUBLIC_URL, process.env.AWS_S3_CDN_URL),
   )
   coverUrl?: string;
 
@@ -29,10 +29,18 @@ export class User extends BaseEntity {
   bio?: string;
 
   @Column({ nullable: true, type: 'date' })
+  @Transform(({ value }) => {
+    if (!value) return null;
+    return value;
+  })
   @ApiPropertyOptional()
   birthday?: Date;
 
   @Column({ type: 'enum', enum: UserGender, nullable: true })
+  @Transform(({ value }) => {
+    if (!value) return null;
+    return value;
+  })
   @ApiPropertyOptional()
   gender?: UserGender;
 
