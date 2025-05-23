@@ -19,6 +19,7 @@ import { SOCIAL } from 'src/notification/enum';
 import { TEMPLATE } from 'src/notification/template';
 import { ImageProcessingService } from 'src/image-processing/image-processing.service';
 import { VideoProcessingService } from 'src/video-processing/video-processing.service';
+import { NSFWDetectionService } from 'src/nsfw-detection/nsfw-detection.service';
 
 @Injectable()
 export class PostService {
@@ -31,9 +32,20 @@ export class PostService {
     private readonly userNotificationRepository: Repository<UserNotification>,
     private readonly imageProcessingService: ImageProcessingService,
     private readonly videoProcessingService: VideoProcessingService,
+    private readonly nsfwDetectionService: NSFWDetectionService,
   ) {}
 
   async create(createPostDto: CreatePostDto) {
+    // Extract image URLs to check for NSFW content
+    const imageUrls = createPostDto.postMedia
+      .filter((media) => this.isImageFile(media.url))
+      .map((media) => media.url);
+
+    // Validate images before creating the post
+    if (imageUrls.length > 0) {
+      await this.nsfwDetectionService.validateImagesForPost(imageUrls);
+    }
+
     const post = this.postRepository.create(createPostDto);
     createPostDto.postMedia = createPostDto.postMedia.map((media) => {
       media.url = media.url.replace(
