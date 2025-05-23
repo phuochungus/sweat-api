@@ -1,12 +1,14 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from 'src/entities';
-import { AuthController } from './auth.controller';
+import { User } from '../entities';
 import { AuthService } from './auth.service';
-import { UserModule } from 'src/user/user.module';
+import { AuthController } from './auth.controller';
+import { CacheModule } from '@nestjs/cache-manager';
+import { UserModule } from '../user/user.module';
 
+@Global()
 @Module({
-  imports: [UserModule, TypeOrmModule.forFeature([User])],
+  imports: [TypeOrmModule.forFeature([User]), CacheModule.register()],
   controllers: [AuthController],
   providers: [AuthService],
   exports: [AuthService],

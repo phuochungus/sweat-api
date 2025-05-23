@@ -3,6 +3,7 @@ import {
   CanActivate,
   ExecutionContext,
   UnauthorizedException,
+  Inject,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
@@ -10,14 +11,18 @@ import { Repository } from 'typeorm';
 import * as admin from 'firebase-admin';
 import { ConfigService } from '@nestjs/config';
 import { UserGender } from 'src/common/enums';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class JwtGuard implements CanActivate {
   private isTestMode: boolean;
 
   constructor(
-    @InjectRepository(User) private readonly userRepository: Repository<User>,
     private readonly configService: ConfigService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly authService: AuthService,
   ) {
     const environment = this.configService.get('environment');
     this.isTestMode = environment === 'test';
@@ -40,95 +45,18 @@ export class JwtGuard implements CanActivate {
     }
 
     try {
-      let userId: string;
-
-      // Log token info for debugging
-      console.log(
-        `Token received: ${token.substring(0, 10)}... isTestMode: ${this.isTestMode}`,
+      // Check cache first for the token
+      const cachedUser = await this.cacheManager.get<User>(
+        `auth_token:${token}`,
       );
 
-      // Special handling for test tokens
-      if (this.isTestMode && token.startsWith('test_token_')) {
-        console.log('Processing test token...');
-        // In test mode, extract user ID from the token
-        const parts = token.split('_');
-        const testUserId = parts[parts.length - 1];
-
-        // Look up the user directly by ID first
-        const userById = await this.userRepository.findOne({
-          where: { id: parseInt(testUserId) },
-        });
-
-        if (userById) {
-          // Use the existing user
-          request.user = userById;
-          return true;
-        }
-
-        // For backward compatibility, try the firebase ID format
-        userId = `test_firebase_id_${testUserId}`;
-
-        console.log(
-          `Test token parsed. Using ID: ${testUserId}, looking for firebaseId: ${userId}`,
-        );
-      } else {
-        // Normal firebase token verification
-        console.log('Verifying Firebase token...');
-        const decodedToken = await admin.auth().verifyIdToken(token);
-        userId = decodedToken.uid;
-        console.log(`Firebase token verified. UID: ${userId}`);
+      if (cachedUser) {
+        request.user = cachedUser;
+        return true;
       }
 
-      // Find user in our database based on Firebase ID
-      let user = await this.userRepository.findOne({
-        where: { firebaseId: userId },
-      });
-
-      if (!user) {
-        console.log(
-          `User not found with firebaseId: ${userId}. Creating a new user...`,
-        );
-
-        // For test mode, create a new user with test data
-        if (this.isTestMode) {
-          const userIdNumber = userId.includes('_')
-            ? parseInt(userId.split('_').pop())
-            : 1;
-          user = this.userRepository.create({
-            firebaseId: userId,
-            fullname: `Test User ${userIdNumber}`,
-            avatarUrl: 'https://example.com/avatar.jpg',
-            coverUrl: 'https://example.com/cover.jpg',
-            bio: 'Auto-created test user',
-            birthday: new Date('1990-01-01'),
-            gender: UserGender.MALE,
-            friendCount: 0,
-          });
-        } else {
-          // For production, get user details from Firebase if possible
-          try {
-            const firebaseUser = await admin.auth().getUser(userId);
-            user = this.userRepository.create({
-              firebaseId: userId,
-              fullname: firebaseUser.displayName || 'New User',
-              avatarUrl: firebaseUser.photoURL,
-            });
-          } catch (error) {
-            // If Firebase user details can't be retrieved, create with minimal info
-            user = this.userRepository.create({
-              firebaseId: userId,
-              fullname: 'New User',
-            });
-          }
-        }
-
-        await this.userRepository.save(user);
-        console.log(`Created new user with ID: ${user.id}`);
-      } else {
-        console.log(`User found: ${user.id} (${user.firebaseId})`);
-      }
-
-      // Attach user to request for use in controllers
+      // If not in cache, use the auth service to verify and get user
+      const user = await this.authService.verifyTokenAndGetUser(token);
       request.user = user;
       return true;
     } catch (error) {

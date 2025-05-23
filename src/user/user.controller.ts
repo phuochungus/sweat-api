@@ -15,7 +15,7 @@ import {
 import { UserService } from './user.service';
 import { GetUserProfileDto, UpdateUserDto } from './dto';
 import { JwtGuard } from 'src/common/guards';
-import { Auth, User } from 'src/common/decorators';
+import { Auth, Public, User } from 'src/common/decorators';
 import { FilterFriendsDto } from 'src/friend/dto/filter-friend.dto';
 import { FriendService } from 'src/friend/friend.service';
 import { ApiTags, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
@@ -125,5 +125,20 @@ export class UserController {
       +userId,
       currentUserId ? +currentUserId : undefined,
     );
+  }
+
+  @Public()
+  @Get('/:id/firebase-token')
+  @ApiOperation({ summary: 'Generate Firebase ID token (development only)' })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Token generated successfully',
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden in production' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async generateFirebaseToken(@Param('id') userId: number) {
+    const token = await this.userService.generateFirebaseToken(userId);
+    return token;
   }
 }

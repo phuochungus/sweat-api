@@ -22,6 +22,7 @@ import { DataSource } from 'typeorm';
 import { BullModule } from '@nestjs/bullmq';
 import { ImageProcessingModule } from './image-processing/image-processing.module';
 import { VideoProcessingModule } from './video-processing/video-processing.module';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -31,6 +32,12 @@ import { VideoProcessingModule } from './video-processing/video-processing.modul
       ],
       isGlobal: true,
     }),
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 3600, // 1 hour cache TTL by default
+      max: 100, // Maximum number of items in cache
+    }),
+    AuthModule,
     ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => {
@@ -44,7 +51,6 @@ import { VideoProcessingModule } from './video-processing/video-processing.modul
       inject: [ConfigService],
     }),
     AwsModule,
-    AuthModule,
     PostModule,
     PostMediaModule,
     PostReactModule,

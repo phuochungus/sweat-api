@@ -18,7 +18,7 @@ import { UserService } from 'src/user/user.service';
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly userService: UserService,
+    // private readonly userService: UserService,
   ) {}
 
   @Post('verify')
@@ -30,20 +30,5 @@ export class AuthController {
   })
   async verifyToken(@Body() verifyTokenDto: VerifyTokenDto) {
     return this.authService.verifyTokenAndGetUser(verifyTokenDto.token);
-  }
-
-  @Public()
-  @Get('/:id/firebase-token')
-  @ApiOperation({ summary: 'Generate Firebase ID token (development only)' })
-  @ApiParam({ name: 'id', description: 'User ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Token generated successfully',
-  })
-  @ApiResponse({ status: 403, description: 'Forbidden in production' })
-  @ApiResponse({ status: 404, description: 'User not found' })
-  async generateFirebaseToken(@Param('id') userId: number) {
-    const token = await this.userService.generateFirebaseToken(userId);
-    return token;
   }
 }
