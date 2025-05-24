@@ -202,6 +202,21 @@ export class PostService {
       throw new NotFoundException(`Post with ID ${id} not found`);
     }
 
+    // Extract image URLs to check for NSFW content if postMedia is being updated
+    if (updatePostDto.postMedia && updatePostDto.postMedia.length > 0) {
+      const imageUrls = updatePostDto.postMedia
+        .filter((media) => this.isImageFile(media.url))
+        .map((media) => media.url);
+
+      // Validate images before updating the post
+      if (imageUrls.length > 0) {
+        await this.nsfwDetectionService.validateImagesForPost(imageUrls);
+      }
+      updatePostDto.postMedia = updatePostDto.postMedia.map(
+        (media) => new PostMedia(media),
+      );
+    }
+
     await this.postRepository.update(id, updatePostDto);
 
     // Return the updated post with relations
