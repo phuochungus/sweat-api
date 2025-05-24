@@ -195,6 +195,7 @@ export class PostService {
   async update(id: number, updatePostDto: UpdatePostDto) {
     const post = await this.postRepository.findOne({
       where: { id },
+      relations: ['postMedia'],
     });
 
     if (!post) {
@@ -203,9 +204,10 @@ export class PostService {
 
     await this.postRepository.update(id, updatePostDto);
 
-    // Return the updated post
+    // Return the updated post with relations
     return this.postRepository.findOne({
       where: { id },
+      relations: ['postMedia', 'user'],
     });
   }
 
