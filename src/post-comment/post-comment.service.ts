@@ -111,8 +111,8 @@ export class PostCommentService {
       // If it's a reply, also notify the parent comment author if different from commenter and post author
       if (
         replyCommentId &&
-        parentComment.userId !== currentUserId &&
-        parentComment.userId !== post.userId
+        parentComment.userId != currentUserId &&
+        parentComment.userId != post.userId
       ) {
         await manager.save(
           manager.create(UserNotification, {
@@ -125,6 +125,11 @@ export class PostCommentService {
             ),
             status: NotificationStatus.UNREAD,
             type: SOCIAL.REPLY,
+            data: {
+              postId,
+              commentId: savedComment.id,
+              replyCommentId: parentComment.id,
+            },
           }),
         );
       }
