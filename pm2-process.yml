@@ -1,5 +1,5 @@
 apps:
-  - script: "node"
-    args: "dist/src/main"
-    cwd: "/usr/src/app"
-    name: "sweat-be"
+  - script: 'node'
+    args: 'dist/src/main'
+    cwd: '/usr/src/app'
+    name: 'sweat-be'
