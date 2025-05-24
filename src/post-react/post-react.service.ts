@@ -86,6 +86,9 @@ export class PostReactService {
             '<content>',
             post.text.substring(0, 30) + (post.text.length > 30 ? '...' : ''),
           ),
+          data: {
+            postId: post.id,
+          },
         });
 
         await manager.save(notification);
