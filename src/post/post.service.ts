@@ -195,34 +195,19 @@ export class PostService {
   async update(id: number, updatePostDto: UpdatePostDto) {
     const post = await this.postRepository.findOne({
       where: { id },
-      relations: ['postMedia'],
     });
 
     if (!post) {
       throw new NotFoundException(`Post with ID ${id} not found`);
     }
 
-    // Extract image URLs to check for NSFW content if postMedia is being updated
-    if (updatePostDto.postMedia && updatePostDto.postMedia.length > 0) {
-      const imageUrls = updatePostDto.postMedia
-        .filter((media) => this.isImageFile(media.url))
-        .map((media) => media.url);
-
-      // Validate images before updating the post
-      if (imageUrls.length > 0) {
-        await this.nsfwDetectionService.validateImagesForPost(imageUrls);
-      }
-      updatePostDto.postMedia = updatePostDto.postMedia.map(
-        (media) => new PostMedia(media),
-      );
-    }
+    delete (updatePostDto as any).postMedia;
 
     await this.postRepository.update(id, updatePostDto);
 
-    // Return the updated post with relations
+    // Return the updated post
     return this.postRepository.findOne({
       where: { id },
-      relations: ['postMedia', 'user'],
     });
   }
 
