@@ -113,7 +113,7 @@ export class PostService {
     if (createdBy) {
       queryBuilder.andWhere('post.userId = :userId', { userId: createdBy });
     } else {
-      const friendIds = [Number(createdBy)];
+      const friendIds = [+createdBy];
       if (currentUserId) {
         // Get user's friends
         const friends = await this.friendRepository.find({
