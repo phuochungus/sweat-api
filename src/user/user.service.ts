@@ -33,9 +33,12 @@ export class UserService {
     const skip = (pageNum - 1) * takeNum;
     const queryBuilder = this.dataSource.createQueryBuilder(User, 'u');
     if (query) {
-      queryBuilder.andWhere('u.fullname ILIKE :query', {
-        query: `%${filterDto.query}%`,
-      });
+      queryBuilder.andWhere(
+        'unaccent(LOWER(u.fullname)) ILIKE unaccent(LOWER(:query))',
+        {
+          query: `%${filterDto.query}%`,
+        },
+      );
     }
     let [item, itemCount] = await Promise.all([
       queryBuilder.take(takeNum).skip(skip).getMany(),
