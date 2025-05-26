@@ -218,6 +218,7 @@ export class UserService {
       pendingFriendRequest: pendingFriendRequest,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+      firebaseId: user?.firebaseId,
     });
 
     // Check friendship status if currentUserId is provided and different from requested profile

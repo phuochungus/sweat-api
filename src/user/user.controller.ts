@@ -102,7 +102,6 @@ export class UserController {
    * @returns The user profile information
    */
   @Get('/:id')
-  @UseInterceptors(ClassSerializerInterceptor)
   @ApiOperation({ summary: 'Get user profile by ID' })
   @ApiParam({ name: 'id', description: 'User ID', example: '1' })
   @ApiResponse({
