@@ -26,6 +26,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { Keyv } from 'keyv';
 import { createKeyv } from '@keyv/redis';
 import { CacheableMemory } from 'cacheable';
+import { FirestoreListenerService } from './firestore-listener/firestore-listener.service';
 
 @Module({
   imports: [
@@ -102,6 +103,7 @@ import { CacheableMemory } from 'cacheable';
       useFactory: (connection: DataSource) => connection,
       inject: [DataSource],
     },
+    FirestoreListenerService,
   ],
   exports: ['DataSource'],
 })
