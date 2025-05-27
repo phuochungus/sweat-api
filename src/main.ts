@@ -5,6 +5,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpExceptionFilter } from './common/exception-filters/http-exception-filter';
 import * as admin from 'firebase-admin';
+import 'dotenv/config';
+
 import {
   Post,
   PostComment,
@@ -18,18 +20,9 @@ import {
 } from 'src/entities';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  const configService = app.get(ConfigService);
-
-  // Enable CORS
-  app.enableCors({
-    origin: true,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
-  });
-
-  // Initialize Firebase Admin
-  const firebaseConfig = configService.get('firebase');
+  const firebaseConfig = {
+    serviceAccount: process.env.FIREBASE_SERVICE_ACCOUNT_KEY,
+  };
   if (firebaseConfig?.serviceAccount) {
     try {
       const serviceAccount = JSON.parse(firebaseConfig.serviceAccount);
@@ -41,6 +34,18 @@ async function bootstrap() {
       console.error('Failed to initialize Firebase Admin SDK:', error);
     }
   }
+  
+  const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
+
+  // Enable CORS
+  app.enableCors({
+    origin: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
+
+  // Initialize Firebase Admin
 
   // Global validation pipe
   app.useGlobalPipes(
