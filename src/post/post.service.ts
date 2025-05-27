@@ -307,6 +307,7 @@ export class PostService {
       .update(Post)
       .set({
         reactCount: () => '"reactCount" + 1',
+        updatedAt: new Date(),
       })
       .where('id = :id', { id: postId })
       .execute();
@@ -375,6 +376,7 @@ export class PostService {
       .update(Post)
       .set({
         reactCount: () => 'GREATEST("reactCount" - 1, 0)',
+        updatedAt: new Date(),
       })
       .where('id = :id', { id: postId })
       .execute();
