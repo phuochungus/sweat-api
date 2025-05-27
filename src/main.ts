@@ -34,7 +34,7 @@ async function bootstrap() {
       console.error('Failed to initialize Firebase Admin SDK:', error);
     }
   }
-  
+
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
