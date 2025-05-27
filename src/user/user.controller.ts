@@ -103,7 +103,11 @@ export class UserController {
    */
   @Get('/firebase-id/:firebaseId')
   @ApiOperation({ summary: 'Get user profile by Firebase ID' })
-  @ApiParam({ name: 'firebaseId', description: 'User Firebase ID', example: 'abc123def456' })
+  @ApiParam({
+    name: 'firebaseId',
+    description: 'User Firebase ID',
+    example: 'abc123def456',
+  })
   @ApiResponse({
     status: 200,
     description: 'User profile retrieved successfully',
