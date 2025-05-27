@@ -240,4 +240,85 @@ export class UserService {
 
     return profileDto;
   }
+
+  /**
+   * Gets a user's profile by Firebase ID
+   * @param firebaseId - The Firebase ID of the user to get the profile for
+   * @param currentUserId - Optional ID of the current user to check friendship status
+   * @returns User profile data with friendship status if currentUserId is provided
+   * @throws {NotFoundException} When user with given Firebase ID is not found
+   */
+  async getUserProfileByFirebaseId(firebaseId: string, currentUserId?: number) {
+    // Verify user exists
+    const user = await this.userRepository.findOne({
+      where: { firebaseId },
+    });
+
+    if (!user) {
+      throw new NotFoundException(
+        `User with Firebase ID ${firebaseId} not found`,
+      );
+    }
+
+    const pendingFriendRequest = await this.friendRequestRepository.findOne({
+      where: [
+        {
+          senderUserId: user.id,
+          receiverUserId: currentUserId,
+          status: FriendRequestStatus.PENDING,
+        },
+        {
+          senderUserId: currentUserId,
+          receiverUserId: user.id,
+          status: FriendRequestStatus.PENDING,
+        },
+      ],
+    });
+
+    // Create and populate profile DTO
+    const profileDto = new GetUserProfileDto();
+    Object.assign(profileDto, {
+      id: user.id,
+      fullname: user.fullname,
+      avatarUrl: user.avatarUrl
+        ? user.avatarUrl.replace(
+            process.env.AWS_S3_PUBLIC_URL,
+            process.env.AWS_S3_CDN_URL,
+          )
+        : null,
+      coverUrl: user.coverUrl
+        ? user.coverUrl.replace(
+            process.env.AWS_S3_PUBLIC_URL,
+            process.env.AWS_S3_CDN_URL,
+          )
+        : null,
+      bio: user.bio,
+      birthday: user.birthday,
+      gender: user.gender,
+      friendCount: user.friendCount,
+      pendingFriendRequest: pendingFriendRequest,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      firebaseId: user?.firebaseId,
+    });
+
+    // Check friendship status if currentUserId is provided and different from requested profile
+    if (currentUserId && currentUserId !== user.id) {
+      const friendship = await this.friendRepository.findOne({
+        where: [
+          { userId1: currentUserId, userId2: user.id },
+          { userId1: user.id, userId2: currentUserId },
+        ],
+      });
+
+      profileDto.isFriend = !!friendship;
+    } else if (currentUserId === user.id) {
+      // If viewing own profile, set isFriend to true for consistency
+      profileDto.isFriend = true;
+    } else {
+      profileDto.isFriend = false;
+    }
+
+    return profileDto;
+  }
 }

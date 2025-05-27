@@ -92,6 +92,38 @@ export class UserController {
   }
 
   /**
+   * Get a user's profile by Firebase ID
+   *
+   * Retrieves detailed information about a user by their Firebase ID, including personal details and friendship status if
+   * requested by an authenticated user
+   *
+   * @param currentUserId - ID of the currently authenticated user
+   * @param firebaseId - Firebase ID of the user whose profile is being requested
+   * @returns The user profile information
+   */
+  @Get('/firebase-id/:firebaseId')
+  @ApiOperation({ summary: 'Get user profile by Firebase ID' })
+  @ApiParam({ name: 'firebaseId', description: 'User Firebase ID', example: 'abc123def456' })
+  @ApiResponse({
+    status: 200,
+    description: 'User profile retrieved successfully',
+    type: GetUserProfileDto,
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async getUserProfileByFirebaseId(
+    @User('id') currentUserId: string,
+    @Param('firebaseId') firebaseId: string,
+  ) {
+    if (!firebaseId) {
+      throw new BadRequestException('Firebase ID is required');
+    }
+    return this.userService.getUserProfileByFirebaseId(
+      firebaseId,
+      currentUserId ? +currentUserId : undefined,
+    );
+  }
+
+  /**
    * Get a user's profile by ID
    *
    * Retrieves detailed information about a user, including personal details and friendship status if
