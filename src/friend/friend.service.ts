@@ -32,7 +32,12 @@ export class FriendService {
       );
 
     if (query) {
-      queryBuilder.andWhere('u.fullname LIKE :query', { query: `%${query}%` });
+      queryBuilder.andWhere(
+        'unaccent(LOWER(u.fullname)) ILIKE unaccent(LOWER(:query))',
+        {
+          query: `%${query}%`,
+        },
+      );
     }
 
     // Add pagination
