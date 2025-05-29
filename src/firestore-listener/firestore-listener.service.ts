@@ -60,9 +60,8 @@ export class FirestoreListenerService implements OnModuleInit {
           const senderName = senderData?.fullname || 'Someone';
 
           // Send push notification
-          await admin
-            .messaging()
-            .send({
+          try {
+            await admin.messaging().send({
               token: fcmToken,
               notification: {
                 title: senderName,
@@ -72,6 +71,12 @@ export class FirestoreListenerService implements OnModuleInit {
                 chatId,
                 messageId: change.doc.id,
                 type: 'chat_message',
+                senderData: JSON.stringify({
+                  username: senderName,
+                  chatId,
+                  avatarUrl: senderData?.avatarUrl || '',
+                  otherUserId: messageData.senderId,
+                }),
               },
               android: {
                 priority: 'high',
@@ -88,11 +93,11 @@ export class FirestoreListenerService implements OnModuleInit {
                   },
                 },
               },
-            })
-            .catch((error) => {})
-            .finally(async () => {
-              await change.doc.ref.update({ notified: true });
             });
+          } catch (error) {
+          } finally {
+            await change.doc.ref.update({ notified: true });
+          }
         }
       }
     });
