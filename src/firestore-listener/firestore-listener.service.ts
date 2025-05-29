@@ -31,40 +31,38 @@ export class FirestoreListenerService implements OnModuleInit {
           // Only notify if not already notified
           if (messageData.notified) continue;
 
-          try {
-            // Get chat document to find participants
-            const chatDoc = await this.db.collection('chats').doc(chatId).get();
-            const chatData = chatDoc.data();
+          // Get chat document to find participants
+          const chatDoc = await this.db.collection('chats').doc(chatId).get();
+          const chatData = chatDoc.data();
 
-            if (!chatData?.participants) continue;
+          if (!chatData?.participants) continue;
 
-            // Find the recipient (the other participant)
-            const recipientId = chatData.participants.find(
-              (id) => id !== messageData.senderId,
-            );
+          // Find the recipient (the other participant)
+          const recipientId = chatData.participants.find(
+            (id) => id !== messageData.senderId,
+          );
 
-            if (!recipientId) continue;
+          if (!recipientId) continue;
 
-            // Get recipient's FCM token
-            const recipientDoc = await this.db
-              .collection('users')
-              .doc(recipientId)
-              .get();
-            const recipientData = recipientDoc.data();
-            const fcmToken = recipientData?.fcmToken;
+          // Get recipient's FCM token
+          const recipientDoc = await this.db
+            .collection('users')
+            .doc(recipientId)
+            .get();
+          const recipientData = recipientDoc.data();
+          const fcmToken = recipientData?.fcmToken;
 
-            if (!fcmToken) {
-              this.logger.warn(
-                `No FCM token found for recipient ${recipientId}`,
-              );
-              continue;
-            }
-            const senderData = chatData.users[messageData.senderId];
+          if (!fcmToken) {
+            continue;
+          }
+          const senderData = chatData.users[messageData.senderId];
 
-            const senderName = senderData?.fullname || 'Someone';
+          const senderName = senderData?.fullname || 'Someone';
 
-            // Send push notification
-            await admin.messaging().send({
+          // Send push notification
+          await admin
+            .messaging()
+            .send({
               token: fcmToken,
               notification: {
                 title: senderName,
@@ -90,17 +88,11 @@ export class FirestoreListenerService implements OnModuleInit {
                   },
                 },
               },
+            })
+            .catch((error) => {})
+            .finally(async () => {
+              await change.doc.ref.update({ notified: true });
             });
-
-            // Mark as notified
-            await change.doc.ref.update({ notified: true });
-
-            this.logger.log(
-              `Successfully sent notification to: ${recipientId}`,
-            );
-          } catch (error) {
-            this.logger.error('Error processing message:', error);
-          }
         }
       }
     });
