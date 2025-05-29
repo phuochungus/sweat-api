@@ -1,18 +1,27 @@
-FROM node:20-alpine as builder
+#Build stage
+FROM node:20-alpine AS build
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-COPY package*.json ./
+COPY package*.json .
 
-RUN npm install && npm install pm2 -g
+RUN npm install
 
 COPY . .
 
 RUN npm run build
 
-RUN chmod +x entrypoint.sh
+#Production stage
+FROM node:20-alpine AS production
+
+WORKDIR /app
+
+COPY package*.json .
+
+RUN npm ci --only=production
+
+COPY --from=build /app/dist ./dist
 
 EXPOSE 3000
 
-CMD ["sh", "./entrypoint.sh"]
-
+CMD ["node", "dist/src/main.js"]
