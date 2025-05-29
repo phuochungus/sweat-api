@@ -1,4 +1,3 @@
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import * as path from 'path';
 
 export default () => ({
@@ -19,7 +18,7 @@ export default () => ({
     extra: {
       connectionLimit: parseInt(process.env.ORM_CONNECTION_LIMIT) || 10,
     },
-  } as TypeOrmModuleOptions,
+  },
 
   aws: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -43,4 +42,5 @@ export default () => ({
     port: parseInt(process.env.REDIS_PORT) || 6379,
     password: process.env.REDIS_PASSWORD,
   },
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY,
 });

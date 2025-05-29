@@ -8,6 +8,7 @@ import { User, UserNotification } from 'src/entities';
 import { ImageProcessingModule } from 'src/image-processing/image-processing.module';
 import { VideoProcessingModule } from 'src/video-processing/video-processing.module';
 import { NSFWDetectionModule } from 'src/nsfw-detection/nsfw-detection.module';
+import { PostValidationModule } from 'src/post-validation/post-validation.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { NSFWDetectionModule } from 'src/nsfw-detection/nsfw-detection.module';
     ImageProcessingModule,
     VideoProcessingModule,
     NSFWDetectionModule,
+    PostValidationModule,
   ],
   controllers: [PostController],
   providers: [PostService],

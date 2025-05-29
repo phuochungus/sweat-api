@@ -22,6 +22,7 @@ import { DataSource } from 'typeorm';
 import { BullModule } from '@nestjs/bullmq';
 import { ImageProcessingModule } from './image-processing/image-processing.module';
 import { VideoProcessingModule } from './video-processing/video-processing.module';
+import { PostValidationModule } from './post-validation/post-validation.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { Keyv } from 'keyv';
 import { createKeyv } from '@keyv/redis';
@@ -94,6 +95,7 @@ import { FirestoreListenerService } from './firestore-listener/firestore-listene
     }),
     ImageProcessingModule,
     VideoProcessingModule,
+    PostValidationModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,4 +1,4 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
@@ -82,7 +82,7 @@ export class NSFWDetectionService {
     const nsfwImages = nsfwChecks.filter((check) => check.isNSFW);
 
     if (nsfwImages.length > 0) {
-      throw new ForbiddenException({
+      throw new UnprocessableEntityException({
         message: 'Post contains inappropriate content and cannot be created',
         nsfwImages: nsfwImages.map((img) => img.url),
       });

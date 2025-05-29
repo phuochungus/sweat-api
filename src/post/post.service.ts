@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -20,6 +20,9 @@ import { TEMPLATE } from 'src/notification/template';
 import { ImageProcessingService } from 'src/image-processing/image-processing.service';
 import { VideoProcessingService } from 'src/video-processing/video-processing.service';
 import { NSFWDetectionService } from 'src/nsfw-detection/nsfw-detection.service';
+import { PostValidationService } from 'src/post-validation/post-validation.service';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class PostService {
@@ -33,8 +36,9 @@ export class PostService {
     private readonly imageProcessingService: ImageProcessingService,
     private readonly videoProcessingService: VideoProcessingService,
     private readonly nsfwDetectionService: NSFWDetectionService,
+    private readonly postValidationService: PostValidationService,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
-
   async create(createPostDto: CreatePostDto) {
     // Extract image URLs to check for NSFW content
     const imageUrls = createPostDto.postMedia
@@ -42,11 +46,33 @@ export class PostService {
       .map((media) => media.url);
 
     // Validate images before creating the post
-    if (imageUrls.length > 0) {
+    const nsfwCheckEnabled = await this.cacheManager.get(
+      'server_side_check_nsfw',
+    );
+    if (imageUrls.length > 0 && nsfwCheckEnabled) {
       await this.nsfwDetectionService.validateImagesForPost(imageUrls);
     }
 
+    // Validate post content with Gemini AI
+    const postValidationEnabled =
+      (await this.cacheManager.get('enable_post_validation')) ?? false;
+
+    if (postValidationEnabled) {
+      try {
+        // Validate the post - will work for both image posts and text-only posts
+        await this.postValidationService.validateAndCheckPost(
+          imageUrls.length > 0 ? imageUrls : null,
+          createPostDto.text,
+        );
+      } catch (error) {
+        console.error('Post validation failed:', error);
+        // Re-throw the error to be handled by the controller
+        throw error;
+      }
+    }
+
     const post = this.postRepository.create(createPostDto);
+    post.text = createPostDto.text.trim();
     createPostDto.postMedia = createPostDto.postMedia.map((media) => {
       media.url = media.url.replace(
         process.env.AWS_S3_PUBLIC_URL,

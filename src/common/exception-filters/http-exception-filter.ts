@@ -27,6 +27,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
           ? exceptionResponse
           : (exceptionResponse as Record<string, any>).message ||
             exception.message,
+      ...(exceptionResponse as Record<string, any>),
     };
 
     // Add validation errors if they exist
