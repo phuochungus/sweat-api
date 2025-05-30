@@ -228,8 +228,8 @@ IMPORTANT:Return ONLY the JSON object.No markdown,no code blocks,no explanation.
    * @returns void, throws exception if validation fails
    */
   validateScores(scores: ValidationScores): void {
-    const minSportRelevance = 0.5; // Minimum sport relevance score
-    const minContentSafety = 0.5; // Minimum content safety score
+    const minSportRelevance = 0.2; // Minimum sport relevance score
+    const minContentSafety = 0.7; // Minimum content safety score
     const minPoliticalNeutrality = 0.8; // Minimum political neutrality score (high is better)
 
     if (scores.political_neutrality < minPoliticalNeutrality) {
