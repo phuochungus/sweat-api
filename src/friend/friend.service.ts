@@ -148,10 +148,10 @@ export class FriendService {
         const friendsCount = await this.dataSource
           .createQueryBuilder(UserFriend, 'uf')
           .innerJoin(
-            User, 
-            'friend', 
+            User,
+            'friend',
             '(uf.userId1 = :userId AND friend.id = uf.userId2) OR (uf.userId2 = :userId AND friend.id = uf.userId1)',
-            { userId: user.id }
+            { userId: user.id },
           )
           .where('friend.deletedAt IS NULL') // Only count non-deleted friends
           .getCount();
@@ -173,11 +173,11 @@ export class FriendService {
       .where('u.id IN (:...ids)', { ids: [currentUserId, userId] })
       .andWhere('u.deletedAt IS NULL')
       .getMany();
-      
+
     if (users.length !== 2) {
       throw new NotFoundException('One or both users not found or deleted');
     }
-    
+
     const friend = await this.dataSource
       .createQueryBuilder(UserFriend, 'uf')
       .where(
@@ -276,23 +276,23 @@ export class FriendService {
       .createQueryBuilder(UserFriend, 'uf')
       .where('uf.userId1 = :userId OR uf.userId2 = :userId', { userId })
       .getMany();
-    
+
     if (friendships.length === 0) {
       return; // No friendships to clean up
     }
-    
+
     // Get the IDs of all friends
-    const friendIds = friendships.map(friendship => 
-      friendship.userId1 === userId ? friendship.userId2 : friendship.userId1
+    const friendIds = friendships.map((friendship) =>
+      friendship.userId1 === userId ? friendship.userId2 : friendship.userId1,
     );
-    
+
     // Delete all friendship records
     await this.dataSource
       .createQueryBuilder(UserFriend, 'uf')
       .delete()
       .where('uf.userId1 = :userId OR uf.userId2 = :userId', { userId })
       .execute();
-    
+
     // Update friend counts for all affected users
     await this.dataSource
       .createQueryBuilder(User, 'u')

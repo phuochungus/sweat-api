@@ -31,7 +31,8 @@ export class UserService {
     const pageNum = Number(page);
     const takeNum = Number(take);
     const skip = (pageNum - 1) * takeNum;
-    const queryBuilder = this.dataSource.createQueryBuilder(User, 'u')
+    const queryBuilder = this.dataSource
+      .createQueryBuilder(User, 'u')
       .where('u.deletedAt IS NULL');
     if (query) {
       queryBuilder.andWhere(
@@ -340,10 +341,10 @@ export class UserService {
 
     // Soft delete the user
     await this.userRepository.softDelete(userId);
-    
+
     // Clean up friendships for the deleted user
     await this.friendService.cleanUpFriendshipsForDeletedUser(userId);
-    
+
     return { message: 'User account deleted successfully' };
   }
 }
