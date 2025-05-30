@@ -70,7 +70,7 @@ export class FirestoreListenerService implements OnModuleInit {
               data: {
                 chatId,
                 messageId: change.doc.id,
-                type: 'chat_message',
+                type: 'chat_messages',
                 senderData: JSON.stringify({
                   username: senderName,
                   chatId,
