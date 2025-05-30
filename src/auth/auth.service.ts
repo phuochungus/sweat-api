@@ -71,7 +71,7 @@ export class AuthService {
 
       // Find existing user or create a new one
       let user = await this.userRepository.findOne({
-        where: { firebaseId },
+        where: { firebaseId, deletedAt: null },
       });
 
       if (!user) {
@@ -107,7 +107,7 @@ export class AuthService {
 
     // Fetch from database if not in cache
     const user = await this.userRepository.findOne({
-      where: { firebaseId },
+      where: { firebaseId, deletedAt: null },
     });
 
     if (user) {

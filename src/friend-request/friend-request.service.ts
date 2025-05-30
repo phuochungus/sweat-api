@@ -45,6 +45,7 @@ export class FriendRequestService {
     const senderUser = await this.dataSource
       .createQueryBuilder(User, 'u')
       .where('u.id = :id', { id: senderUserId })
+      .andWhere('u.deletedAt IS NULL') // Ensure sender is not deleted
       .getOne();
 
     if (!senderUser) {
@@ -54,6 +55,7 @@ export class FriendRequestService {
     const receiverUser = await this.dataSource
       .createQueryBuilder(User, 'u')
       .where('u.id = :id', { id: receiverUserId })
+      .andWhere('u.deletedAt IS NULL') // Ensure receiver is not deleted
       .getOne();
 
     if (!receiverUser) {

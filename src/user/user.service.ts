@@ -31,7 +31,8 @@ export class UserService {
     const pageNum = Number(page);
     const takeNum = Number(take);
     const skip = (pageNum - 1) * takeNum;
-    const queryBuilder = this.dataSource.createQueryBuilder(User, 'u');
+    const queryBuilder = this.dataSource.createQueryBuilder(User, 'u')
+      .where('u.deletedAt IS NULL');
     if (query) {
       queryBuilder.andWhere(
         'unaccent(LOWER(u.fullname)) ILIKE unaccent(LOWER(:query))',
@@ -106,7 +107,7 @@ export class UserService {
 
   async findOne(id: number) {
     const user = await this.userRepository.findOne({
-      where: { id },
+      where: { id, deletedAt: null },
     });
     if (!user) {
       throw new BadRequestException('User not found');
@@ -114,9 +115,9 @@ export class UserService {
     return user;
   }
   async update(id: number, updateUserDto: UpdateUserDto) {
-    await this.userRepository.update(id, updateUserDto);
+    await this.userRepository.update({ id, deletedAt: null }, updateUserDto);
     return this.userRepository.findOne({
-      where: { id },
+      where: { id, deletedAt: null },
     });
   }
 
@@ -128,7 +129,7 @@ export class UserService {
    */
   async generateFirebaseToken(userId: number): Promise<string> {
     const user: { firebaseId?: string } = await this.userRepository.findOne({
-      where: { id: userId },
+      where: { id: userId, deletedAt: null },
     });
 
     if (!user || !user.firebaseId) {
@@ -172,7 +173,7 @@ export class UserService {
   async getUserProfile(userId: number, currentUserId?: number) {
     // Verify user exists
     const user = await this.userRepository.findOne({
-      where: { id: userId },
+      where: { id: userId, deletedAt: null },
     });
 
     const pendingFriendRequest = await this.friendRequestRepository.findOne({
@@ -251,7 +252,7 @@ export class UserService {
   async getUserProfileByFirebaseId(firebaseId: string, currentUserId?: number) {
     // Verify user exists
     const user = await this.userRepository.findOne({
-      where: { firebaseId },
+      where: { firebaseId, deletedAt: null },
     });
 
     if (!user) {
@@ -320,5 +321,29 @@ export class UserService {
     }
 
     return profileDto;
+  }
+
+  /**
+   * Soft deletes a user by setting the deletedAt field
+   * @param userId - The ID of the user to delete
+   * @returns The deleted user
+   * @throws {NotFoundException} When user with given ID is not found
+   */
+  async softDelete(userId: number) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId, deletedAt: null },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    // Soft delete the user
+    await this.userRepository.softDelete(userId);
+    
+    // Clean up friendships for the deleted user
+    await this.friendService.cleanUpFriendshipsForDeletedUser(userId);
+    
+    return { message: 'User account deleted successfully' };
   }
 }

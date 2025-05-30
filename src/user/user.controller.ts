@@ -162,6 +162,39 @@ export class UserController {
     );
   }
 
+  /**
+   * Delete a user's account (soft delete)
+   *
+   * Marks a user account as deleted by setting the deletedAt timestamp
+   *
+   * @param currentUserId - ID of the currently authenticated user
+   * @param userId - ID of the user whose account is being deleted
+   * @returns Confirmation message
+   */
+  @Delete('/:id')
+  @ApiOperation({ summary: 'Delete user account' })
+  @ApiParam({ name: 'id', description: 'User ID', example: '1' })
+  @ApiResponse({
+    status: 200,
+    description: 'User account deleted successfully',
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Forbidden - Cannot delete another user's account",
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async deleteUser(
+    @User('id') currentUserId: string,
+    @Param('id', ParseIntPipe) userId: number,
+  ) {
+    // Ensure users can only delete their own accounts
+    if (+currentUserId !== userId) {
+      throw new BadRequestException('You can only delete your own account');
+    }
+
+    return this.userService.softDelete(userId);
+  }
+
   @Public()
   @Get('/:id/firebase-token')
   @ApiOperation({ summary: 'Generate Firebase ID token (development only)' })

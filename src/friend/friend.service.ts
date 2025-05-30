@@ -29,7 +29,8 @@ export class FriendService {
         'uf',
         `(uf.userId1 = :userId AND u.id = uf.userId2) OR (uf.userId2 = :userId AND u.id = uf.userId1)`,
         { userId },
-      );
+      )
+      .where('u.deletedAt IS NULL'); // Add filter for soft-deleted users
 
     if (query) {
       queryBuilder.andWhere(
@@ -116,6 +117,7 @@ export class FriendService {
       .where('uf.userId1 = :userId OR uf.userId2 = :userId', {
         userId: userId1,
       })
+      .andWhere('u.deletedAt IS NULL') // Add filter for soft-deleted users
       .getMany();
 
     const user2Friends = await this.dataSource
@@ -128,6 +130,7 @@ export class FriendService {
       .where('uf.userId1 = :userId OR uf.userId2 = :userId', {
         userId: userId2,
       })
+      .andWhere('u.deletedAt IS NULL') // Add filter for soft-deleted users
       .getMany();
 
     const user1FriendIds = user1Friends.map((friend) => friend.id);
@@ -135,15 +138,22 @@ export class FriendService {
   }
 
   async syncFriendCountForAllUser() {
-    const users = await this.dataSource.createQueryBuilder(User, 'u').getMany();
+    const users = await this.dataSource
+      .createQueryBuilder(User, 'u')
+      .where('u.deletedAt IS NULL') // Only count non-deleted users
+      .getMany();
 
     await Promise.all(
       users.map(async (user) => {
         const friendsCount = await this.dataSource
           .createQueryBuilder(UserFriend, 'uf')
-          .where('uf.userId1 = :userId OR uf.userId2 = :userId', {
-            userId: user.id,
-          })
+          .innerJoin(
+            User, 
+            'friend', 
+            '(uf.userId1 = :userId AND friend.id = uf.userId2) OR (uf.userId2 = :userId AND friend.id = uf.userId1)',
+            { userId: user.id }
+          )
+          .where('friend.deletedAt IS NULL') // Only count non-deleted friends
           .getCount();
 
         await this.dataSource
@@ -157,6 +167,17 @@ export class FriendService {
   }
 
   async unfriend({ currentUserId, userId }) {
+    // First verify that neither user is deleted
+    const users = await this.dataSource
+      .createQueryBuilder(User, 'u')
+      .where('u.id IN (:...ids)', { ids: [currentUserId, userId] })
+      .andWhere('u.deletedAt IS NULL')
+      .getMany();
+      
+    if (users.length !== 2) {
+      throw new NotFoundException('One or both users not found or deleted');
+    }
+    
     const friend = await this.dataSource
       .createQueryBuilder(UserFriend, 'uf')
       .where(
@@ -214,6 +235,7 @@ export class FriendService {
       .where('u.id IN (:...ids)', {
         ids: suggestedUserIds.map((s) => s.suggestedUserId),
       })
+      .andWhere('u.deletedAt IS NULL') // Only suggest non-deleted users
       .getMany();
 
     users = await Promise.all(
@@ -233,6 +255,7 @@ export class FriendService {
       const randomUsers = await this.dataSource
         .createQueryBuilder(User, 'u')
         .where('u.id != :userId', { userId })
+        .andWhere('u.deletedAt IS NULL') // Only suggest non-deleted users
         .orderBy('RANDOM()') // ✅ Fix: Use "RANDOM()" for PostgreSQL (instead of "RAND()")
         .limit(limit - users.length)
         .getMany();
@@ -240,5 +263,44 @@ export class FriendService {
       users.push(...randomUsers);
     }
     return users;
+  }
+
+  /**
+   * Clean up friendships when a user is deleted
+   * This method should be called after a user is soft-deleted
+   * @param userId - The ID of the deleted user
+   */
+  async cleanUpFriendshipsForDeletedUser(userId: number) {
+    // Get all friends of the deleted user
+    const friendships = await this.dataSource
+      .createQueryBuilder(UserFriend, 'uf')
+      .where('uf.userId1 = :userId OR uf.userId2 = :userId', { userId })
+      .getMany();
+    
+    if (friendships.length === 0) {
+      return; // No friendships to clean up
+    }
+    
+    // Get the IDs of all friends
+    const friendIds = friendships.map(friendship => 
+      friendship.userId1 === userId ? friendship.userId2 : friendship.userId1
+    );
+    
+    // Delete all friendship records
+    await this.dataSource
+      .createQueryBuilder(UserFriend, 'uf')
+      .delete()
+      .where('uf.userId1 = :userId OR uf.userId2 = :userId', { userId })
+      .execute();
+    
+    // Update friend counts for all affected users
+    await this.dataSource
+      .createQueryBuilder(User, 'u')
+      .update()
+      .set({
+        friendCount: () => '"friendCount" - 1',
+      })
+      .where('id IN (:...ids)', { ids: friendIds })
+      .execute();
   }
 }

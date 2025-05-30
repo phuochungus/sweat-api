@@ -18,6 +18,8 @@ export default () => ({
     extra: {
       connectionLimit: parseInt(process.env.ORM_CONNECTION_LIMIT) || 10,
     },
+    // Ensures soft-deleted records are excluded from queries by default
+    softDelete: true,
   },
 
   aws: {
