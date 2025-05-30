@@ -173,7 +173,6 @@ export class UserController {
    */
   @Delete('/')
   @ApiOperation({ summary: 'Delete user account' })
-  @ApiParam({ name: 'id', description: 'User ID', example: '1' })
   @ApiResponse({
     status: 200,
     description: 'User account deleted successfully',
