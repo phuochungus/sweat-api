@@ -171,7 +171,7 @@ export class UserController {
    * @param userId - ID of the user whose account is being deleted
    * @returns Confirmation message
    */
-  @Delete('/:id')
+  @Delete('/')
   @ApiOperation({ summary: 'Delete user account' })
   @ApiParam({ name: 'id', description: 'User ID', example: '1' })
   @ApiResponse({
@@ -183,16 +183,8 @@ export class UserController {
     description: "Forbidden - Cannot delete another user's account",
   })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async deleteUser(
-    @User('id') currentUserId: string,
-    @Param('id', ParseIntPipe) userId: number,
-  ) {
-    // Ensure users can only delete their own accounts
-    if (+currentUserId !== userId) {
-      throw new BadRequestException('You can only delete your own account');
-    }
-
-    return this.userService.softDelete(userId);
+  async deleteUser(@User('id') currentUserId: string) {
+    return this.userService.softDelete(+currentUserId);
   }
 
   @Public()
