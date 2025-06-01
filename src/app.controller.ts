@@ -29,4 +29,39 @@ export class AppController {
     `;
     await this.dataSource.query(query);
   }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async syncReactCount() {
+    const query = `
+      UPDATE public.post p
+      SET "reactCount" = COALESCE(r.react_count, 0)
+      FROM (
+          SELECT "postId", COUNT(*) AS react_count
+          FROM public.post_react
+          WHERE "deletedAt" IS NULL
+            AND "postId" IS NOT NULL
+          GROUP BY "postId"
+      ) r
+      WHERE p.id = r."postId";
+      );
+    `;
+    await this.dataSource.query(query);
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async syncCommentCount() {
+    const query = `
+      UPDATE public.post p
+      SET "commentCount" = COALESCE(c.comment_count, 0)
+      FROM (
+          SELECT "postId", COUNT(*) AS comment_count
+          FROM public.post_comment
+          WHERE "deletedAt" IS NULL
+            AND "postId" IS NOT NULL
+          GROUP BY "postId"
+      ) c
+      WHERE p.id = c."postId";
+    `;
+    await this.dataSource.query(query);
+  }
 }
