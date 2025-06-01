@@ -42,7 +42,7 @@ export class AppController {
             AND "postId" IS NOT NULL
           GROUP BY "postId"
       ) r
-      WHERE p.id = r."postId";
+      WHERE p.id = r."postId"
       );
     `;
     await this.dataSource.query(query);
