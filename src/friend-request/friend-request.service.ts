@@ -307,6 +307,7 @@ export class FriendRequestService {
         .createQueryBuilder(UserNotification, 'un')
         .update()
         .set({
+          status: NotificationStatus.READ,
           data: JSON.parse(
             JSON.stringify({
               id: friendRequest.id,
@@ -346,6 +347,7 @@ export class FriendRequestService {
         .createQueryBuilder(UserNotification, 'un')
         .update()
         .set({
+          status: NotificationStatus.READ,
           data: JSON.parse(
             JSON.stringify({
               id: friendRequest.id,
