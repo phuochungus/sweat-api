@@ -33,6 +33,9 @@ export class PostMedia extends BaseEntity {
   @ApiPropertyOptional()
   text?: string;
 
+  @Column({ nullable: true })
+  videoThumbnail?: string;
+
   @ManyToOne(() => Post)
   post: Post;
 }
