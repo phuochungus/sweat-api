@@ -14,10 +14,8 @@ RUN npm run build
 #Production stage
 FROM node:20-alpine AS production
 
-RUN apt-get update && \
-    apt-get install -y ffmpeg && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Install ffmpeg using Alpine's package manager (apk)
+RUN apk add --no-cache ffmpeg
 
 WORKDIR /app
 
