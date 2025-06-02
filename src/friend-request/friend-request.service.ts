@@ -151,7 +151,7 @@ export class FriendRequestService {
 
     // Ensure page and take are numbers
     const pageNum = Number(page);
-    const takeNum = Number(take);
+    let takeNum = Number(take);
 
     const queryBuilder = this.dataSource.createQueryBuilder(
       UserFriendRequest,
@@ -182,10 +182,17 @@ export class FriendRequestService {
       });
     }
 
-    const skip = (pageNum - 1) * takeNum;
+    let skip = (pageNum - 1) * takeNum;
+
+    // If page is -1 and take is -1, we want to fetch all records without pagination
+    if (page == -1 && take == -1) {
+      queryBuilder.skip(null).take(null);
+    } else {
+      queryBuilder.skip(skip).take(takeNum);
+    }
 
     let [item, itemCount] = await Promise.all([
-      queryBuilder.skip(skip).take(takeNum).getMany(),
+      queryBuilder.getMany(),
       queryBuilder.getCount(),
     ]);
 
