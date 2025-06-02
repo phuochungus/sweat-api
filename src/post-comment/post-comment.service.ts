@@ -153,8 +153,8 @@ export class PostCommentService {
 
     // Ensure page and take are numbers
     const pageNum = Number(page);
-    const takeNum = Number(take);
-    const skip = (pageNum - 1) * takeNum;
+    let takeNum = Number(take);
+    let skip = (pageNum - 1) * takeNum;
 
     const queryBuilder = this.dataSource
       .createQueryBuilder(PostComment, 'comment')
@@ -182,8 +182,13 @@ export class PostCommentService {
 
     queryBuilder.orderBy('comment.createdAt', 'DESC');
 
+    if (page == -1 && take == -1) {
+      queryBuilder.take(undefined).skip(undefined);
+    } else {
+      queryBuilder.take(takeNum).skip(skip);
+    }
     const [items, itemCount] = await Promise.all([
-      queryBuilder.take(takeNum).skip(skip).getMany(),
+      queryBuilder.getMany(),
       queryBuilder.getCount(),
     ]);
 
