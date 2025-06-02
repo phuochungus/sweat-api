@@ -4,23 +4,19 @@ import { IsArray, IsInt, IsOptional, Max, Min } from 'class-validator';
 
 export class PageOptionsDto {
   @ApiPropertyOptional({
-    minimum: 1,
     default: 1,
   })
   @Type(() => Number)
   @IsInt()
-  @Min(1)
   @IsOptional()
   readonly page?: number = 1;
 
   @ApiPropertyOptional({
-    minimum: 1,
     default: 10,
     description: 'maximum number of items per page',
   })
   @Type(() => Number)
   @IsInt()
-  @Min(1)
   @IsOptional()
   readonly take?: number = 10;
 }
