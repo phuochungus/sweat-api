@@ -24,9 +24,7 @@ The EC2 instance needs the following permissions to write logs to CloudWatch:
         "logs:PutLogEvents",
         "logs:DescribeLogStreams"
       ],
-      "Resource": [
-        "arn:aws:logs:*:*:*"
-      ]
+      "Resource": ["arn:aws:logs:*:*:*"]
     }
   ]
 }
