@@ -62,7 +62,6 @@ jobs:
             --log-driver=awslogs \
             --log-opt awslogs-region=ap-southeast-1 \
             --log-opt awslogs-group=/sweat-api/docker-logs \
-            --log-opt awslogs-stream-prefix=sweat-api \
             ${{ secrets.DOCKER_USERNAME }}/sweat-api:latest'
 
           ENCODED_SCRIPT=$(echo "$DEPLOY_SCRIPT" | base64 -w 0)

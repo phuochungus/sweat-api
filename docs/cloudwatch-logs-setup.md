@@ -46,7 +46,7 @@ Once set up, you can view the logs in CloudWatch:
 2. In the left navigation, select "Log groups"
 3. Look for the log group `/sweat-api/docker-logs`
 4. Click on the log group to see the log streams
-5. The logs will be organized by the stream prefix `sweat-api`
+5. The logs will be stored in the log group `/sweat-api/docker-logs`
 
 ## Troubleshooting
 
