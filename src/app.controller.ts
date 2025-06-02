@@ -43,7 +43,6 @@ export class AppController {
           GROUP BY "postId"
       ) r
       WHERE p.id = r."postId"
-      );
     `;
     await this.dataSource.query(query);
   }
@@ -60,7 +59,7 @@ export class AppController {
             AND "postId" IS NOT NULL
           GROUP BY "postId"
       ) c
-      WHERE p.id = c."postId";
+      WHERE p.id = c."postId"
     `;
     await this.dataSource.query(query);
   }
