@@ -191,8 +191,11 @@ export class PostService {
       );
     }
 
+    if (!createdBy) {
+      queryBuilder.take(takeNum).skip(skip);
+    }
     let [item, itemCount] = await Promise.all([
-      queryBuilder.take(takeNum).skip(skip).getMany(),
+      queryBuilder.getMany(),
       queryBuilder.getCount(),
     ]);
 
