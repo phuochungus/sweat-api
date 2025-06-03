@@ -3,11 +3,13 @@ import { AppService } from './app.service';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { SeedService } from 'src/seed/seed.service';
 
 @Controller()
 export class AppController {
   constructor(
     private readonly appService: AppService,
+    private readonly seedService: SeedService,
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
@@ -62,5 +64,16 @@ export class AppController {
       WHERE p.id = c."postId"
     `;
     await this.dataSource.query(query);
+  }
+
+  @Get('/seed')
+  async seedDatabase() {
+    try {
+      await this.seedService.seedDatabase();
+      return { message: 'Database seeded successfully' };
+    } catch (error) {
+      console.error('Error seeding database:', error);
+      throw error;
+    }
   }
 }

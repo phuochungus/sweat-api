@@ -39,6 +39,15 @@ export class JwtGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
+    const ADMIN_TOKEN = this.configService.get('adminToken');
+    if (request.headers['x-api-key'] === ADMIN_TOKEN) {
+      const uid = request.headers['x-uid'];
+      let user = await this.dataSource
+        .getRepository(User)
+        .upsert({ id: +uid }, []);
+      request.user = user;
+      return true;
+    }
     if (isPublic) {
       return true;
     }

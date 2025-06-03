@@ -80,6 +80,16 @@ async function bootstrap() {
       },
       'firebase-jwt',
     )
+    .addGlobalParameters({
+      in: 'header',
+      required: false,
+      name: 'x-api-key',
+    })
+    .addGlobalParameters({
+      in: 'header',
+      required: false,
+      name: 'x-uid',
+    })
     .build();
 
   const document = SwaggerModule.createDocument(app, config, {

@@ -28,6 +28,7 @@ import { Keyv } from 'keyv';
 import { createKeyv } from '@keyv/redis';
 import { CacheableMemory } from 'cacheable';
 import { FirestoreListenerService } from './firestore-listener/firestore-listener.service';
+import { SeedService } from './seed/seed.service';
 
 @Module({
   imports: [
@@ -106,6 +107,7 @@ import { FirestoreListenerService } from './firestore-listener/firestore-listene
       inject: [DataSource],
     },
     FirestoreListenerService,
+    SeedService,
   ],
   exports: ['DataSource'],
 })

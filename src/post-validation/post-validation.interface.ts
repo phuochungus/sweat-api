@@ -1,5 +1,4 @@
 export interface ValidationScores {
-  sport_relevance: number;
   content_safety: number;
   political_neutrality: number;
 }
