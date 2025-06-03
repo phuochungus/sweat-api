@@ -14,7 +14,7 @@ export default () => ({
     database: process.env.ORM_DB || 'sweat_api',
     entities: [path.join(__dirname, '..', 'entities', '*.entity.{ts,js}')],
     synchronize: process.env.ORM_SYNCHRONIZE === 'true',
-    logging: process.env.ORM_LOGGING === 'true',
+    logging: process.env.LOG_LEVEL?.split(',') || ['log', 'error', 'warn'],
     extra: {
       connectionLimit: parseInt(process.env.ORM_CONNECTION_LIMIT) || 10,
     },

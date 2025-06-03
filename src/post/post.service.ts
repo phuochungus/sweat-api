@@ -13,7 +13,7 @@ import {
   UserFriend,
   UserNotification,
 } from 'src/entities';
-import { NotificationStatus, PostPrivacy, ReactType } from 'src/common/enums';
+import { MediaType, NotificationStatus, PostPrivacy, ReactType } from 'src/common/enums';
 import { FilterLikeDto } from 'src/post/dto/filter-like.dto';
 import { SOCIAL } from 'src/notification/enum';
 import { TEMPLATE } from 'src/notification/template';
@@ -73,33 +73,46 @@ export class PostService {
 
     const post = this.postRepository.create(createPostDto);
     post.text = createPostDto.text.trim();
-    createPostDto.postMedia = createPostDto.postMedia.map((media) => {
-      media.url = media.url.replace(
-        process.env.AWS_S3_PUBLIC_URL,
-        process.env.AWS_S3_CDN_URL,
-      );
+    
+    // Process media asynchronously to generate video thumbnails when needed
+    createPostDto.postMedia = await Promise.all(
+      createPostDto.postMedia.map(async (media) => {
+        media.url = media.url.replace(
+          process.env.AWS_S3_PUBLIC_URL,
+          process.env.AWS_S3_CDN_URL,
+        );
 
-      // Extract S3 key from URL
-      const s3Key = media.url
-        .replace(process.env.AWS_S3_CDN_URL, '')
-        .replace(process.env.AWS_S3_PUBLIC_URL, '');
+        // Extract S3 key from URL
+        const s3Key = media.url
+          .replace(process.env.AWS_S3_CDN_URL, '')
+          .replace(process.env.AWS_S3_PUBLIC_URL, '');
 
-      // Add media processing job to the appropriate queue based on media type
-      if (this.isImageFile(media.url)) {
-        this.imageProcessingService.addProcessingJob({
-          url: media.url,
-          s3_key: s3Key,
-        });
-      } else if (this.isVideoFile(media.url)) {
-        this.videoProcessingService.addProcessingJob({
-          url: media.url,
-          s3_key: s3Key,
-        });
-      }
+        // Add media processing job to the appropriate queue based on media type
+        if (this.isImageFile(media.url)) {
+          this.imageProcessingService.addProcessingJob({
+            url: media.url,
+            s3_key: s3Key,
+          });
+        } else if (this.isVideoFile(media.url) || media.type === MediaType.VIDEO) {
+          this.videoProcessingService.addProcessingJob({
+            url: media.url,
+            s3_key: s3Key,
+          });
 
-      const postMediaEntity = new PostMedia(media);
-      return postMediaEntity;
-    });
+          // Generate video thumbnail
+          try {
+            const thumbnailUrl = await this.videoProcessingService.generateVideoThumbnail(media.url);
+            media.videoThumbnail = thumbnailUrl;
+          } catch (error) {
+            console.error('Error generating video thumbnail:', error);
+            // Continue without thumbnail if generation fails
+          }
+        }
+
+        const postMediaEntity = new PostMedia(media);
+        return postMediaEntity;
+      })
+    );
     post.mediaCount = createPostDto.postMedia.length;
     return await this.postRepository.save(post, { transaction: true });
   }

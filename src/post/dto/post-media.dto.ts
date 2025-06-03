@@ -6,4 +6,5 @@ export class PostMediaDto extends PickType(PostMedia, [
   'priority',
   'type',
   'text',
+  'videoThumbnail',
 ] as const) {}
