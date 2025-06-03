@@ -13,7 +13,12 @@ import {
   UserFriend,
   UserNotification,
 } from 'src/entities';
-import { MediaType, NotificationStatus, PostPrivacy, ReactType } from 'src/common/enums';
+import {
+  MediaType,
+  NotificationStatus,
+  PostPrivacy,
+  ReactType,
+} from 'src/common/enums';
 import { FilterLikeDto } from 'src/post/dto/filter-like.dto';
 import { SOCIAL } from 'src/notification/enum';
 import { TEMPLATE } from 'src/notification/template';
@@ -73,7 +78,7 @@ export class PostService {
 
     const post = this.postRepository.create(createPostDto);
     post.text = createPostDto.text.trim();
-    
+
     // Process media asynchronously to generate video thumbnails when needed
     createPostDto.postMedia = await Promise.all(
       createPostDto.postMedia.map(async (media) => {
@@ -93,7 +98,10 @@ export class PostService {
             url: media.url,
             s3_key: s3Key,
           });
-        } else if (this.isVideoFile(media.url) || media.type === MediaType.VIDEO) {
+        } else if (
+          this.isVideoFile(media.url) ||
+          media.type === MediaType.VIDEO
+        ) {
           this.videoProcessingService.addProcessingJob({
             url: media.url,
             s3_key: s3Key,
@@ -101,7 +109,10 @@ export class PostService {
 
           // Generate video thumbnail
           try {
-            const thumbnailUrl = await this.videoProcessingService.generateVideoThumbnail(media.url);
+            const thumbnailUrl =
+              await this.videoProcessingService.generateVideoThumbnail(
+                media.url,
+              );
             media.videoThumbnail = thumbnailUrl;
           } catch (error) {
             console.error('Error generating video thumbnail:', error);
@@ -111,7 +122,7 @@ export class PostService {
 
         const postMediaEntity = new PostMedia(media);
         return postMediaEntity;
-      })
+      }),
     );
     post.mediaCount = createPostDto.postMedia.length;
     return await this.postRepository.save(post, { transaction: true });

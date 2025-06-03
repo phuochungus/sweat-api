@@ -37,7 +37,7 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, {
     logger: new ConsoleLogger({
-      colors: false,
+      colors: process.env.LOG_COLORS === 'true',
     }),
   });
   const configService = app.get(ConfigService);
