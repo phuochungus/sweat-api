@@ -45,6 +45,7 @@ export class PostService {
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
   async create(createPostDto: CreatePostDto) {
+    createPostDto.text = createPostDto.text?.trim() || '';
     // Extract image URLs to check for NSFW content
     const imageUrls = createPostDto.postMedia
       .filter((media) => this.isImageFile(media.url))
@@ -75,9 +76,6 @@ export class PostService {
         throw error;
       }
     }
-
-    const post = this.postRepository.create(createPostDto);
-    post.text = createPostDto.text.trim();
 
     // Process media asynchronously to generate video thumbnails when needed
     createPostDto.postMedia = await Promise.all(
@@ -124,6 +122,7 @@ export class PostService {
         return postMediaEntity;
       }),
     );
+    const post = this.postRepository.create(createPostDto);
     post.mediaCount = createPostDto.postMedia.length;
     return await this.postRepository.save(post, { transaction: true });
   }

@@ -114,7 +114,6 @@ export class VideoProcessingService {
           timestamps: ['50%'], // Take screenshot at 50% of video duration
           filename: path.basename(thumbnailPath),
           folder: path.dirname(thumbnailPath),
-          size: '320x240', // Standard thumbnail size
         })
         .on('end', () => {
           resolve();
