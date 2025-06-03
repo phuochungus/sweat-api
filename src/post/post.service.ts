@@ -205,6 +205,10 @@ export class PostService {
       );
     }
 
+    if (includes?.includes('isFeatPost')) {
+      queryBuilder.andWhere('post.mediaCount > 0');
+    }
+
     let [item, itemCount] = await Promise.all([
       queryBuilder.take(takeNum).skip(skip).getMany(),
       queryBuilder.getCount(),

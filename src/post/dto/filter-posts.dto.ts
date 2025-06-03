@@ -5,7 +5,7 @@ export class FilterPostsDto extends GenericFilter {
   @ApiPropertyOptional({ description: "List posts on user's profile" })
   createdBy?: string;
 
-  @ApiProperty({ description: 'isReacted' })
+  @ApiProperty({ description: 'isReacted, isFeatPost' })
   includes?: string;
 
   @ApiPropertyOptional({ description: 'Search by post content' })
