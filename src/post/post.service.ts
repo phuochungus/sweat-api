@@ -154,6 +154,10 @@ export class PostService {
       .leftJoinAndSelect('post.postMedia', 'postMedia')
       .where('post.deletedAt IS NULL');
 
+    if (includes?.includes('isFeatPost')) {
+      queryBuilder.andWhere('post.mediaCount > 0');
+    }
+
     if (query) {
       queryBuilder.where('post.text ILIKE :query', {
         query: `%${query}%`,
@@ -162,10 +166,7 @@ export class PostService {
     if (createdBy) {
       queryBuilder.andWhere('post.userId = :userId', { userId: createdBy });
     } else {
-      queryBuilder.orWhere('post.userId = :userId', {
-        userId: currentUserId,
-      });
-      const friendIds = [];
+      const friendIds = [currentUserId];
       if (currentUserId) {
         // Get user's friends
         const friends = await this.friendRepository.find({
@@ -181,32 +182,13 @@ export class PostService {
           }
         });
       }
-
-      // Replace the simple condition with the complex one using Brackets
       queryBuilder.andWhere(
-        new Brackets((qb) => {
-          qb.where('post.privacy = :publicPrivacy', {
-            publicPrivacy: PostPrivacy.PUBLIC,
-          }).orWhere(
-            new Brackets((innerQb) => {
-              innerQb
-                .where('post.privacy = :friendPrivacy', {
-                  friendPrivacy: PostPrivacy.FRIEND,
-                })
-                .andWhere(
-                  friendIds.length > 0
-                    ? 'post.userId IN (:...friendIds)'
-                    : '1=0', // If no friends, this condition should never match
-                  { friendIds },
-                );
-            }),
-          );
-        }),
+        '(post.userId IN (:...friendIds) OR post.privacy = :publicPrivacy)',
+        {
+          friendIds,
+          publicPrivacy: PostPrivacy.PUBLIC,
+        },
       );
-    }
-
-    if (includes?.includes('isFeatPost')) {
-      queryBuilder.andWhere('post.mediaCount > 0');
     }
 
     let [item, itemCount] = await Promise.all([
