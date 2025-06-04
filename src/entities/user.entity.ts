@@ -3,11 +3,13 @@ import { BaseEntity } from './base.entity';
 import { UserGender } from 'src/common/enums';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
+import { IsOptional } from 'class-validator';
 
 @Entity('user')
 export class User extends BaseEntity {
   @Column({ nullable: true })
   @ApiPropertyOptional()
+  @IsOptional()
   fullname?: string;
 
   @Column({ nullable: true })

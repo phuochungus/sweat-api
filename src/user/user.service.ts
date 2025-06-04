@@ -116,10 +116,14 @@ export class UserService {
     return user;
   }
   async update(id: number, updateUserDto: UpdateUserDto) {
-    await this.userRepository.update({ id, deletedAt: null }, updateUserDto);
-    return this.userRepository.findOne({
+    console.log('Updating user with ID:', id);
+    console.log('Update data:', updateUserDto);
+    await this.userRepository.update({ id }, updateUserDto);
+    const user = await this.userRepository.findOne({
       where: { id, deletedAt: null },
     });
+    console.log(user);
+    return user;
   }
 
   /**
