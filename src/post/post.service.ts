@@ -165,31 +165,30 @@ export class PostService {
     }
     if (createdBy) {
       queryBuilder.andWhere('post.userId = :userId', { userId: createdBy });
-    } else {
-      const friendIds = [currentUserId];
-      if (currentUserId) {
-        // Get user's friends
-        const friends = await this.friendRepository.find({
-          where: [{ userId1: currentUserId }, { userId2: currentUserId }],
-        });
-
-        // Extract friend IDs
-        friends.forEach((friend) => {
-          if (friend.userId1 === currentUserId) {
-            friendIds.push(friend.userId2);
-          } else {
-            friendIds.push(friend.userId1);
-          }
-        });
-      }
-      queryBuilder.andWhere(
-        '(post.userId IN (:...friendIds) OR post.privacy = :publicPrivacy)',
-        {
-          friendIds,
-          publicPrivacy: PostPrivacy.PUBLIC,
-        },
-      );
     }
+    const friendIds = [currentUserId];
+    if (currentUserId) {
+      // Get user's friends
+      const friends = await this.friendRepository.find({
+        where: [{ userId1: currentUserId }, { userId2: currentUserId }],
+      });
+
+      // Extract friend IDs
+      friends.forEach((friend) => {
+        if (friend.userId1 === currentUserId) {
+          friendIds.push(friend.userId2);
+        } else {
+          friendIds.push(friend.userId1);
+        }
+      });
+    }
+    queryBuilder.andWhere(
+      '(post.userId IN (:...friendIds) OR post.privacy = :publicPrivacy)',
+      {
+        friendIds,
+        publicPrivacy: PostPrivacy.PUBLIC,
+      },
+    );
 
     if (!createdBy) {
       queryBuilder.take(takeNum).skip(skip);

@@ -90,6 +90,8 @@ async function bootstrap() {
       required: false,
       name: 'x-uid',
     })
+    .addServer('http://localhost:3000', 'Local Development Server')
+    .addServer('https://api.sweat-app.tech', 'Production Server')
     .build();
 
   const document = SwaggerModule.createDocument(app, config, {
