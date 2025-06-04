@@ -296,6 +296,7 @@ export class FriendRequestService {
         .values([
           {
             receiverUserId: friendRequest.senderUserId,
+            senderUserId: currentUserId,
             text: `<b>${currentUser.fullname}</b> đã chấp nhận lời mời kết bạn.`,
             status: NotificationStatus.UNREAD,
             type: SOCIAL.ACCEPT_FRIEND_REQUEST,
