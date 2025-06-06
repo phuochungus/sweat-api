@@ -62,6 +62,7 @@ export class PostValidationService {
             scores: {
               content_safety: 0,
               political_neutrality: 0,
+              sport_relevance: 0,
             },
           };
         }
@@ -97,11 +98,13 @@ export class PostValidationService {
 
 Expected format:
 {
+"sport_relevance":0.0,
 "content_safety":0.0,
 "political_neutrality":0.0
 }
 
 Scoring:
+-sport_relevance:0=not sports related,1=sports content
 -content_safety:0=toxic/inappropriate,1=safe/clean
 -political_neutrality:1=non-political,0=political content
 
@@ -164,11 +167,13 @@ IMPORTANT:Return ONLY the JSON object.No markdown,no code blocks,no explanation.
 
 Expected format:
 {
+"sport_relevance":0.0,
 "content_safety":0.0,
 "political_neutrality":0.0
 }
 
 Scoring:
+-sport_relevance:0=not sports related,1=sports content
 -content_safety:0=toxic/inappropriate,1=safe/clean
 -political_neutrality:1=non-political,0=political content
 
@@ -223,8 +228,16 @@ IMPORTANT:Return ONLY the JSON object.No markdown,no code blocks,no explanation.
    * @returns void, throws exception if validation fails
    */
   validateScores(scores: ValidationScores): void {
+    const minSportRelevance = 0.1; // Minimum sport relevance score
     const minContentSafety = 0.7; // Minimum content safety score
     const minPoliticalNeutrality = 0.8; // Minimum political neutrality score (high is better)
+
+    if (scores.sport_relevance < minSportRelevance) {
+      throw new UnprocessableEntityException({
+        message: 'Nội dung không liên quan đến thể thao',
+        code: 'SPORT_RELEVANCE',
+      });
+    }
 
     if (scores.political_neutrality < minPoliticalNeutrality) {
       throw new UnprocessableEntityException({
