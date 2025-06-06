@@ -232,13 +232,6 @@ IMPORTANT:Return ONLY the JSON object.No markdown,no code blocks,no explanation.
     const minContentSafety = 0.7; // Minimum content safety score
     const minPoliticalNeutrality = 0.8; // Minimum political neutrality score (high is better)
 
-    if (scores.sport_relevance < minSportRelevance) {
-      throw new UnprocessableEntityException({
-        message: 'Nội dung không liên quan đến thể thao',
-        code: 'SPORT_RELEVANCE',
-      });
-    }
-
     if (scores.political_neutrality < minPoliticalNeutrality) {
       throw new UnprocessableEntityException({
         message: 'Nội dung có tính chất chính trị quá cao',
@@ -250,6 +243,13 @@ IMPORTANT:Return ONLY the JSON object.No markdown,no code blocks,no explanation.
       throw new UnprocessableEntityException({
         message: 'Nội dung chứa tài liệu không phù hợp hoặc không an toàn',
         code: 'CONTENT_SAFETY',
+      });
+    }
+
+    if (scores.sport_relevance < minSportRelevance) {
+      throw new UnprocessableEntityException({
+        message: 'Nội dung không liên quan đến thể thao',
+        code: 'SPORT_RELEVANCE',
       });
     }
   }
