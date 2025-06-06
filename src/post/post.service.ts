@@ -67,7 +67,7 @@ export class PostService {
       try {
         // Validate the post - will work for both image posts and text-only posts
         await this.postValidationService.validateAndCheckPost(
-          null,
+          imageUrls.length > 0 ? imageUrls : null,
           createPostDto.text,
         );
       } catch (error) {
