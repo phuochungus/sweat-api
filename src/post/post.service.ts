@@ -47,7 +47,10 @@ export class PostService {
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly userFollowService: UserFollowService,
   ) {}
-  async create(createPostDto: CreatePostDto, { currentUserId }: { currentUserId?: number } = {}) {
+  async create(
+    createPostDto: CreatePostDto,
+    { currentUserId }: { currentUserId?: number } = {},
+  ) {
     createPostDto.text = createPostDto.text?.trim() || '';
     // Extract image URLs to check for NSFW content
     const imageUrls = createPostDto.postMedia
@@ -127,7 +130,9 @@ export class PostService {
     );
     const post = this.postRepository.create(createPostDto);
     post.mediaCount = createPostDto.postMedia.length;
-    const savedPost = await this.postRepository.save(post, { transaction: true });
+    const savedPost = await this.postRepository.save(post, {
+      transaction: true,
+    });
 
     // Notify followers about the new post
     if (currentUserId) {
@@ -140,8 +145,8 @@ export class PostService {
         await this.userFollowService.notifyFollowers(
           currentUserId,
           SOCIAL.FOLLOW_POST_CREATE,
-          `${user.fullname} created a new post: ${savedPost.text.substring(0, 50)}${savedPost.text.length > 50 ? '...' : ''}`,
-          { postId: savedPost.id }
+          `<b>${user.fullname}</b> created a new post: ${savedPost.text.substring(0, 50)}${savedPost.text.length > 50 ? '...' : ''}`,
+          { postId: savedPost.id },
         );
       }
     }
@@ -397,9 +402,9 @@ export class PostService {
         await this.userFollowService.notifyFollowers(
           userId,
           SOCIAL.FOLLOW_POST_LIKE,
-          `${currentUser.fullname} liked a post: ${post.text.substring(0, 50)}${post.text.length > 50 ? '...' : ''}`,
+          `<b>${currentUser.fullname}</b> liked a post: ${post.text.substring(0, 50)}${post.text.length > 50 ? '...' : ''}`,
           { postId, likedUserId: post.userId },
-          [post.userId] // Exclude the post owner from follower notifications
+          [post.userId], // Exclude the post owner from follower notifications
         );
       }
     }

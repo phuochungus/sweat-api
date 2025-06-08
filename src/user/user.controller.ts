@@ -208,7 +208,10 @@ export class UserController {
   @ApiOperation({ summary: 'Follow a user' })
   @ApiParam({ name: 'id', description: 'User ID to follow' })
   @ApiResponse({ status: 201, description: 'Successfully followed user' })
-  @ApiResponse({ status: 400, description: 'Cannot follow yourself or already following' })
+  @ApiResponse({
+    status: 400,
+    description: 'Cannot follow yourself or already following',
+  })
   @ApiResponse({ status: 404, description: 'User not found' })
   async followUser(
     @User('id') followerId: number,

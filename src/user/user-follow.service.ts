@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { UserFollow, User, UserNotification } from 'src/entities';
@@ -74,32 +78,24 @@ export class UserFollowService {
 
     const queryBuilder = this.dataSource
       .createQueryBuilder()
-      .select([
-        'u.id',
-        'u.fullname',
-        'u.avatarUrl',
-        'u.bio',
-      ])
+      .select(['u.id', 'u.fullname', 'u.avatarUrl', 'u.bio'])
       .from(User, 'u')
       .innerJoin(UserFollow, 'uf', 'uf.followerId = u.id')
       .where('uf.userId = :userId', { userId });
 
     if (search) {
-      queryBuilder.andWhere(
-        'u.fullname ILIKE :search',
-        { search: `%${search}%` }
-      );
+      queryBuilder.andWhere('u.fullname ILIKE :search', {
+        search: `%${search}%`,
+      });
     }
 
     const [followers, total] = await Promise.all([
-      queryBuilder
-        .skip(skip)
-        .take(limit)
-        .getRawMany(),
+      queryBuilder.skip(skip).take(limit).getRawMany(),
       queryBuilder.getCount(),
-    ]);    const pageMetaDto = new PageMetaDto({ 
-      itemCount: total, 
-      pageOptionsDto: { page, take: limit } 
+    ]);
+    const pageMetaDto = new PageMetaDto({
+      itemCount: total,
+      pageOptionsDto: { page, take: limit },
     });
     return new PageDto(followers, pageMetaDto);
   }
@@ -110,32 +106,24 @@ export class UserFollowService {
 
     const queryBuilder = this.dataSource
       .createQueryBuilder()
-      .select([
-        'u.id',
-        'u.fullname',
-        'u.avatarUrl',
-        'u.bio',
-      ])
+      .select(['u.id', 'u.fullname', 'u.avatarUrl', 'u.bio'])
       .from(User, 'u')
       .innerJoin(UserFollow, 'uf', 'uf.userId = u.id')
       .where('uf.followerId = :followerId', { followerId: userId });
 
     if (search) {
-      queryBuilder.andWhere(
-        'u.fullname ILIKE :search',
-        { search: `%${search}%` }
-      );
+      queryBuilder.andWhere('u.fullname ILIKE :search', {
+        search: `%${search}%`,
+      });
     }
 
     const [following, total] = await Promise.all([
-      queryBuilder
-        .skip(skip)
-        .take(limit)
-        .getRawMany(),
+      queryBuilder.skip(skip).take(limit).getRawMany(),
       queryBuilder.getCount(),
-    ]);    const pageMetaDto = new PageMetaDto({ 
-      itemCount: total, 
-      pageOptionsDto: { page, take: limit } 
+    ]);
+    const pageMetaDto = new PageMetaDto({
+      itemCount: total,
+      pageOptionsDto: { page, take: limit },
     });
     return new PageDto(following, pageMetaDto);
   }
@@ -152,26 +140,27 @@ export class UserFollowService {
       where: { userId },
       select: ['followerId'],
     });
-    return followers.map(f => f.followerId);
-  }  async notifyFollowers(
+    return followers.map((f) => f.followerId);
+  }
+  async notifyFollowers(
     userId: number,
     type: SOCIAL,
     message: string,
     data: any = {},
-    excludeUserIds: number[] = []
+    excludeUserIds: number[] = [],
   ) {
     const followerIds = await this.getFollowerIds(userId);
-    
+
     if (followerIds.length === 0) return;
 
     // Filter out excluded users (e.g., post owner to avoid duplicate notifications)
     const filteredFollowerIds = followerIds.filter(
-      followerId => !excludeUserIds.includes(followerId)
+      (followerId) => !excludeUserIds.includes(followerId),
     );
 
     if (filteredFollowerIds.length === 0) return;
 
-    const notifications = filteredFollowerIds.map(followerId => ({
+    const notifications = filteredFollowerIds.map((followerId) => ({
       receiverUserId: followerId,
       senderUserId: userId,
       text: message,

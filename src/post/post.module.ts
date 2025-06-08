@@ -13,7 +13,13 @@ import { UserModule } from 'src/user/user.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Post, UserFriend, User, UserNotification, UserFollow]),
+    TypeOrmModule.forFeature([
+      Post,
+      UserFriend,
+      User,
+      UserNotification,
+      UserFollow,
+    ]),
     ImageProcessingModule,
     VideoProcessingModule,
     NSFWDetectionModule,
