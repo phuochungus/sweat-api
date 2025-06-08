@@ -11,6 +11,7 @@ import {
   UseInterceptors,
   ClassSerializerInterceptor,
   ParseIntPipe,
+  Post,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { GetUserProfileDto, UpdateUserDto } from './dto';
@@ -18,6 +19,7 @@ import { JwtGuard } from 'src/common/guards';
 import { Auth, Public, User } from 'src/common/decorators';
 import { FilterFriendsDto } from 'src/friend/dto/filter-friend.dto';
 import { FriendService } from 'src/friend/friend.service';
+import { UserFollowService, FilterFollowDto } from './user-follow.service';
 import { ApiTags, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 
 @Auth()
@@ -28,6 +30,7 @@ export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly friendService: FriendService,
+    private readonly userFollowService: UserFollowService,
   ) {}
 
   @Get('/')
@@ -199,5 +202,63 @@ export class UserController {
   async generateFirebaseToken(@Param('id') userId: number) {
     const token = await this.userService.generateFirebaseToken(userId);
     return token;
+  }
+
+  @Post(':id/follow')
+  @ApiOperation({ summary: 'Follow a user' })
+  @ApiParam({ name: 'id', description: 'User ID to follow' })
+  @ApiResponse({ status: 201, description: 'Successfully followed user' })
+  @ApiResponse({ status: 400, description: 'Cannot follow yourself or already following' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async followUser(
+    @User('id') followerId: number,
+    @Param('id', ParseIntPipe) userId: number,
+  ) {
+    return this.userFollowService.followUser(followerId, userId);
+  }
+
+  @Delete(':id/follow')
+  @ApiOperation({ summary: 'Unfollow a user' })
+  @ApiParam({ name: 'id', description: 'User ID to unfollow' })
+  @ApiResponse({ status: 200, description: 'Successfully unfollowed user' })
+  @ApiResponse({ status: 404, description: 'Follow relationship not found' })
+  async unfollowUser(
+    @User('id') followerId: number,
+    @Param('id', ParseIntPipe) userId: number,
+  ) {
+    return this.userFollowService.unfollowUser(followerId, userId);
+  }
+
+  @Get(':id/followers')
+  @ApiOperation({ summary: 'Get user followers' })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiResponse({ status: 200, description: 'List of followers' })
+  async getFollowers(
+    @Param('id', ParseIntPipe) userId: number,
+    @Query() filterDto: FilterFollowDto,
+  ) {
+    return this.userFollowService.getFollowers(userId, filterDto);
+  }
+
+  @Get(':id/following')
+  @ApiOperation({ summary: 'Get users that this user is following' })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiResponse({ status: 200, description: 'List of following users' })
+  async getFollowing(
+    @Param('id', ParseIntPipe) userId: number,
+    @Query() filterDto: FilterFollowDto,
+  ) {
+    return this.userFollowService.getFollowing(userId, filterDto);
+  }
+
+  @Get(':id/follow-status')
+  @ApiOperation({ summary: 'Check if current user is following another user' })
+  @ApiParam({ name: 'id', description: 'User ID to check' })
+  @ApiResponse({ status: 200, description: 'Follow status' })
+  async checkFollowStatus(
+    @User('id') followerId: number,
+    @Param('id', ParseIntPipe) userId: number,
+  ) {
+    return this.userFollowService.checkFollowStatus(followerId, userId);
   }
 }

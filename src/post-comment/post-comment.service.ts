@@ -9,6 +9,7 @@ import { NotificationStatus } from 'src/common/enums';
 import { SOCIAL } from 'src/notification/enum';
 import { TEMPLATE } from 'src/notification/template';
 import { UpdatePostCommentDto } from 'src/post-comment/dto';
+import { UserFollowService } from 'src/user/user-follow.service';
 
 @Injectable()
 export class PostCommentService {
@@ -20,6 +21,7 @@ export class PostCommentService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private dataSource: DataSource,
+    private readonly userFollowService: UserFollowService,
   ) {}
 
   async create(createPostCommentDto: CreatePostCommentDto, { currentUserId }) {
@@ -131,6 +133,17 @@ export class PostCommentService {
               replyCommentId: parentComment.id,
             },
           }),
+        );
+      }
+
+      // Notify followers about the comment (only if commenting on someone else's post, exclude post owner)
+      if (post.userId !== currentUserId) {
+        await this.userFollowService.notifyFollowers(
+          currentUserId,
+          SOCIAL.FOLLOW_POST_COMMENT,
+          `${currentUser.fullname} commented on a post: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`,
+          { postId, commentId: savedComment.id, postOwnerId: post.userId },
+          [post.userId] // Exclude the post owner from follower notifications
         );
       }
 

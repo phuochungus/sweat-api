@@ -12,6 +12,7 @@ import {
   User,
   UserFriend,
   UserNotification,
+  UserFollow,
 } from 'src/entities';
 import {
   MediaType,
@@ -28,6 +29,7 @@ import { NSFWDetectionService } from 'src/nsfw-detection/nsfw-detection.service'
 import { PostValidationService } from 'src/post-validation/post-validation.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { UserFollowService } from 'src/user/user-follow.service';
 
 @Injectable()
 export class PostService {
@@ -43,8 +45,9 @@ export class PostService {
     private readonly nsfwDetectionService: NSFWDetectionService,
     private readonly postValidationService: PostValidationService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    private readonly userFollowService: UserFollowService,
   ) {}
-  async create(createPostDto: CreatePostDto) {
+  async create(createPostDto: CreatePostDto, { currentUserId }: { currentUserId?: number } = {}) {
     createPostDto.text = createPostDto.text?.trim() || '';
     // Extract image URLs to check for NSFW content
     const imageUrls = createPostDto.postMedia
@@ -124,7 +127,26 @@ export class PostService {
     );
     const post = this.postRepository.create(createPostDto);
     post.mediaCount = createPostDto.postMedia.length;
-    return await this.postRepository.save(post, { transaction: true });
+    const savedPost = await this.postRepository.save(post, { transaction: true });
+
+    // Notify followers about the new post
+    if (currentUserId) {
+      const user = await this.dataSource
+        .createQueryBuilder(User, 'user')
+        .where('user.id = :id', { id: currentUserId })
+        .getOne();
+
+      if (user) {
+        await this.userFollowService.notifyFollowers(
+          currentUserId,
+          SOCIAL.FOLLOW_POST_CREATE,
+          `${user.fullname} created a new post: ${savedPost.text.substring(0, 50)}${savedPost.text.length > 50 ? '...' : ''}`,
+          { postId: savedPost.id }
+        );
+      }
+    }
+
+    return savedPost;
   }
 
   // Helper method to determine if a file is an image
@@ -370,6 +392,15 @@ export class PostService {
         });
 
         await this.userNotificationRepository.save(notification);
+
+        // Notify followers about the like (exclude the post owner to avoid duplicate notifications)
+        await this.userFollowService.notifyFollowers(
+          userId,
+          SOCIAL.FOLLOW_POST_LIKE,
+          `${currentUser.fullname} liked a post: ${post.text.substring(0, 50)}${post.text.length > 50 ? '...' : ''}`,
+          { postId, likedUserId: post.userId },
+          [post.userId] // Exclude the post owner from follower notifications
+        );
       }
     }
 

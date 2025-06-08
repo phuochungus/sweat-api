@@ -4,6 +4,7 @@ export * from './post-react.entity';
 export * from './post.entity';
 export * from './user-friend-request.entity';
 export * from './user-friend.entity';
+export * from './user-follow.entity';
 export * from './user-notification.entity';
 export * from './user.entity';
 export * from './user-setting.entity';
