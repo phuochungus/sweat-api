@@ -351,7 +351,10 @@ export class FriendRequestService {
         );
       } catch (error) {
         // Log error but don't fail the friend request acceptance
-        console.error('Error creating automatic follows after friend acceptance:', error);
+        console.error(
+          'Error creating automatic follows after friend acceptance:',
+          error,
+        );
       }
 
       return {
