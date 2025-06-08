@@ -15,6 +15,7 @@ import { DataSource } from 'typeorm';
 import { FriendRequestStatus, NotificationStatus } from 'src/common/enums';
 import { PageDto, PageMetaDto } from 'src/common/dto';
 import { FriendService } from 'src/friend/friend.service';
+import { UserFollowService } from 'src/user/user-follow.service';
 import { TEMPLATE } from 'src/notification/template';
 import { SOCIAL } from 'src/notification/enum';
 import { FilterFriendRequestDto } from 'src/friend-request/dto/filter-friend-request.dto';
@@ -24,6 +25,7 @@ export class FriendRequestService {
   constructor(
     private readonly dataSource: DataSource,
     private readonly friendService: FriendService,
+    private readonly userFollowService: UserFollowService,
   ) {}
 
   async create(
@@ -336,6 +338,21 @@ export class FriendRequestService {
           ids: [friendRequest.senderUserId, friendRequest.receiverUserId],
         })
         .execute();
+
+      // Automatically make them follow each other when they become friends
+      try {
+        await this.userFollowService.followUser(
+          friendRequest.senderUserId,
+          friendRequest.receiverUserId,
+        );
+        await this.userFollowService.followUser(
+          friendRequest.receiverUserId,
+          friendRequest.senderUserId,
+        );
+      } catch (error) {
+        // Log error but don't fail the friend request acceptance
+        console.error('Error creating automatic follows after friend acceptance:', error);
+      }
 
       return {
         success: true,
