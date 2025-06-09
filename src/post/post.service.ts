@@ -145,7 +145,7 @@ export class PostService {
         await this.userFollowService.notifyFollowers(
           currentUserId,
           SOCIAL.FOLLOW_POST_CREATE,
-          `<b>${user.fullname}</b> created a new post: ${savedPost.text.substring(0, 50)}${savedPost.text.length > 50 ? '...' : ''}`,
+          `<b>${user.fullname}</b> đã đăng bài viết: ${savedPost.text.substring(0, 50)}${savedPost.text.length > 50 ? '...' : ''}`,
           { postId: savedPost.id },
         );
       }
@@ -402,7 +402,7 @@ export class PostService {
         await this.userFollowService.notifyFollowers(
           userId,
           SOCIAL.FOLLOW_POST_LIKE,
-          `<b>${currentUser.fullname}</b> liked a post: ${post.text.substring(0, 50)}${post.text.length > 50 ? '...' : ''}`,
+          `<b>${currentUser.fullname}</b> đã thích bài viết: ${post.text.substring(0, 50)}${post.text.length > 50 ? '...' : ''}`,
           { postId, likedUserId: post.userId },
           [post.userId], // Exclude the post owner from follower notifications
         );

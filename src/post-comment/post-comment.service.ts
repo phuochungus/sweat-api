@@ -141,7 +141,7 @@ export class PostCommentService {
         await this.userFollowService.notifyFollowers(
           currentUserId,
           SOCIAL.FOLLOW_POST_COMMENT,
-          `<b>${currentUser.fullname}</b> commented on a post: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`,
+          `<b>${currentUser.fullname}</b> đã bình luận vào bài viết: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`,
           { postId, commentId: savedComment.id, postOwnerId: post.userId },
           [post.userId], // Exclude the post owner from follower notifications
         );
