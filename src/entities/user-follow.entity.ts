@@ -1,9 +1,10 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { User } from './user.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('user_follow')
+@Index(['userId', 'followerId'], { unique: true })
 export class UserFollow extends BaseEntity {
   @Column({ nullable: false })
   @ApiProperty()

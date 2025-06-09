@@ -2,6 +2,8 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { CreateFriendRequestDto } from './dto/create-friend-request.dto';
 import { UpdateFriendRequestDto } from './dto/update-friend-request.dto';
@@ -25,6 +27,7 @@ export class FriendRequestService {
   constructor(
     private readonly dataSource: DataSource,
     private readonly friendService: FriendService,
+    @Inject(forwardRef(() => UserFollowService))
     private readonly userFollowService: UserFollowService,
   ) {}
 
