@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { UserFollowService } from './user-follow.service';
@@ -22,9 +22,8 @@ import { NotificationModule } from 'src/notification/notification.module';
       UserFollow,
       UserNotification,
     ]),
-    FriendModule,
+    forwardRef(() => FriendModule),
     NotificationModule,
-    FriendModule,
   ],
   controllers: [UserController],
   providers: [UserService, UserFollowService],

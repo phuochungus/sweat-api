@@ -1,12 +1,22 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { PageDto, PageMetaDto } from 'src/common/dto';
 import { User, UserFriend, UserFriendRequest } from 'src/entities';
 import { FilterFriendsDto } from 'src/friend/dto/filter-friend.dto';
 import { DataSource } from 'typeorm';
+import { UserFollowService } from 'src/user/user-follow.service';
 
 @Injectable()
 export class FriendService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    private readonly dataSource: DataSource,
+    @Inject(forwardRef(() => UserFollowService))
+    private readonly userFollowService: UserFollowService,
+  ) {}
 
   // New findAll method that works with seed.ts
   async findAll(filterFriendsDto: FilterFriendsDto, { currentUserId }) {
@@ -190,12 +200,14 @@ export class FriendService {
       throw new NotFoundException('Friend not found');
     }
 
+    // Delete the friendship
     await this.dataSource
       .createQueryBuilder(UserFriend, 'uf')
       .delete()
       .where('id = :id', { id: friend.id })
       .execute();
 
+    // Update friend counts
     await this.dataSource
       .createQueryBuilder(User, 'u')
       .update()
@@ -206,6 +218,12 @@ export class FriendService {
         ids: [Number(currentUserId), Number(userId)],
       })
       .execute();
+
+    // Unfollow each other (if they are following) - run concurrently
+    await Promise.allSettled([
+      this.userFollowService.unfollowUser(currentUserId, userId),
+      this.userFollowService.unfollowUser(userId, currentUserId),
+    ]);
   }
 
   async getSuggestions({ userId, limit = 5 }) {
@@ -301,6 +319,15 @@ export class FriendService {
         friendCount: () => '"friendCount" - 1',
       })
       .where('id IN (:...ids)', { ids: friendIds })
+      .execute();
+
+    // Clean up follow relationships for the deleted user
+    // This will remove both following and follower relationships
+    await this.dataSource
+      .createQueryBuilder()
+      .delete()
+      .from('user_follow')
+      .where('userId = :userId OR followerId = :userId', { userId })
       .execute();
   }
 }
