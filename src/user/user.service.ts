@@ -13,6 +13,7 @@ import { FriendRequestStatus } from 'src/common/enums';
 import { FilterFriendsDto } from 'src/friend/dto/filter-friend.dto';
 import { PageDto, PageMetaDto } from 'src/common/dto';
 import { FriendService } from 'src/friend/friend.service';
+import { UserFollowService } from 'src/user/user-follow.service';
 
 @Injectable()
 export class UserService {
@@ -24,6 +25,7 @@ export class UserService {
     private readonly friendRequestRepository: Repository<UserFriendRequest>,
     private readonly dataSource: DataSource,
     private readonly friendService: FriendService,
+    private readonly userFollowService: UserFollowService,
   ) {}
 
   async findAll(filterDto: FilterFriendsDto, { currentUserId }) {
@@ -200,7 +202,10 @@ export class UserService {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
 
-    // Create and populate profile DTO
+    const followStatus = await this.userFollowService.checkFollowStatus(
+      currentUserId,
+      userId,
+    );
     const profileDto = new GetUserProfileDto();
     Object.assign(profileDto, {
       id: user.id,
@@ -225,6 +230,7 @@ export class UserService {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       firebaseId: user?.firebaseId,
+      isFollowing: followStatus.isFollowing
     });
 
     // Check friendship status if currentUserId is provided and different from requested profile
