@@ -230,7 +230,7 @@ export class UserService {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       firebaseId: user?.firebaseId,
-      isFollowing: followStatus.isFollowing
+      isFollowing: followStatus.isFollowing,
     });
 
     // Check friendship status if currentUserId is provided and different from requested profile
