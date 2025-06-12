@@ -222,7 +222,6 @@ export class FriendService {
     // Unfollow each other (if they are following) - run concurrently
     await Promise.allSettled([
       this.userFollowService.unfollowUser(currentUserId, userId),
-      this.userFollowService.unfollowUser(userId, currentUserId),
     ]);
   }
 
