@@ -349,8 +349,12 @@ export class UserService {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
 
-    // Soft delete the user
-    await this.userRepository.softDelete(userId);
+    await auth().deleteUser(user.firebaseId);
+    user.firebaseId = null; // Clear Firebase ID
+    await this.userRepository.update(userId, {
+      firebaseId: null,
+      fullname: `Deleted User ${userId}`,
+    });
 
     // Clean up friendships for the deleted user
     await this.friendService.cleanUpFriendshipsForDeletedUser(userId);
