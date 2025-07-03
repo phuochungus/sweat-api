@@ -24,7 +24,7 @@ export class PostValidationService {
   ) {
     this.geminiApiKey = this.configService.get('GEMINI_API_KEY');
     this.geminiApiUrl =
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent';
   }
   /**
    * Validates an image post using the Gemini API
