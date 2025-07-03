@@ -56,7 +56,7 @@ jobs:
 
           # Run container with CloudWatch logs driver
           docker run -d --name sweat-api \
-            -p 80:3000 \
+            -p 3000:3000 \
             --env-file .env \
             --restart always \
             --log-driver=awslogs \
