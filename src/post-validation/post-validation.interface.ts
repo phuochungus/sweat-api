@@ -21,6 +21,9 @@ export interface GeminiRequest {
   contents: Array<{
     parts: GeminiContentPart[];
   }>;
+  generationConfig: {
+    temperature: number;
+  };
 }
 
 export interface GeminiResponse {

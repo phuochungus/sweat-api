@@ -24,7 +24,7 @@ export class PostValidationService {
   ) {
     this.geminiApiKey = this.configService.get('GEMINI_API_KEY');
     this.geminiApiUrl =
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent';
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite-preview-06-17:generateContent';
   }
   /**
    * Validates an image post using the Gemini API
@@ -127,6 +127,9 @@ IMPORTANT:Return ONLY the JSON object.No markdown,no code blocks,no explanation.
             ],
           },
         ],
+        generationConfig: {
+          temperature: 0,
+        },
       };
 
       // Send the request to Gemini API
@@ -190,6 +193,9 @@ IMPORTANT:Return ONLY the JSON object.No markdown,no code blocks,no explanation.
             ],
           },
         ],
+        generationConfig: {
+          temperature: 0,
+        },
       };
 
       // Send the request to Gemini API
